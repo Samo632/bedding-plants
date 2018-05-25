@@ -1,0 +1,17 @@
+{"properties": [
+  {
+    "name": "beddingplants.import.orderImportsName",
+    "type": "java.lang.String",
+    "description": "Name of Order Imports Worksheet within Excel Workbook"
+  },
+  {
+    "name": "beddingplants.import.plantImportsName",
+    "type": "java.lang.String",
+    "description": "Name of Plant Imports Worksheet within Excel Workbook"
+  },
+  {
+    "name": "beddingplants.geolocation.googleApiKey",
+    "type": "java.lang.String",
+    "description": "Google API-Key for use with the BeddingPlants application"
+  }
+]}
