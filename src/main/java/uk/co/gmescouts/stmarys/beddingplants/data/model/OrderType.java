@@ -12,6 +12,6 @@ public enum OrderType {
 	}
 
 	public static OrderType valueOf(final Character type) {
-		return Arrays.stream(OrderType.values()).filter(orderType -> orderType.type.equals(type)).findFirst().get();
+		return Arrays.stream(OrderType.values()).filter(orderType -> orderType.type.equals(type)).findFirst().orElse(null);
 	}
 }

@@ -54,9 +54,7 @@ public class Sale {
 	public void addOrder(final Order order) {
 		if (order != null) {
 			// replace existing Order, if present
-			if (orders.contains(order)) {
-				orders.remove(order);
-			}
+			orders.remove(order);
 			orders.add(order);
 			order.setSale(this);
 		}
@@ -65,9 +63,7 @@ public class Sale {
 	public void addPlant(final Plant plant) {
 		if (plant != null) {
 			// replace existing Plant, if present
-			if (plants.contains(plant)) {
-				plants.remove(plant);
-			}
+			plants.remove(plant);
 			plants.add(plant);
 			plant.setSale(this);
 		}

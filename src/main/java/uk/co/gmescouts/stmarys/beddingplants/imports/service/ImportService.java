@@ -122,12 +122,10 @@ public class ImportService {
 		LOGGER.info("Imported [{}] valid orders", orders.size());
 
 		// geolocate and add to Sale
-		if (orders != null) {
-			orders.stream().forEach(order -> {
-				geolocateOrderAddress(order);
-				sale.addOrder(order);
-			});
-		}
+		orders.forEach(order -> {
+			geolocateOrderAddress(order);
+			sale.addOrder(order);
+		});
 
 		// return the updated Sale
 		return sale;
@@ -145,19 +143,17 @@ public class ImportService {
 				StringUtils.defaultIfBlank(plantImportsSheetName, importConfiguration.getPlantImportsName()), ExcelPlant.class);
 
 		// convert to Plants
-		final Set<Plant> plants = importedPlants.stream().filter(ExcelPlant::isValid).map(plant -> createPlant(plant)).collect(Collectors.toSet());
+		final Set<Plant> plants = importedPlants.stream().filter(ExcelPlant::isValid).map(ImportService::createPlant).collect(Collectors.toSet());
 		LOGGER.info("Imported [{}] valid Plants", plants.size());
 
 		// add to Sale
-		if (plants != null) {
-			plants.stream().forEach(plant -> sale.addPlant(plant));
-		}
+		plants.forEach(sale::addPlant);
 
 		// return the updated Sale
 		return sale;
 	}
 
-	private Plant createPlant(final ExcelPlant excelPlant) {
+	private static Plant createPlant(final ExcelPlant excelPlant) {
 		LOGGER.trace("Convert imported Plant: [{}]", excelPlant);
 
 		final Float price = StringUtils.isNotBlank(excelPlant.getPrice()) ? Float.valueOf(excelPlant.getPrice().replaceFirst("£", "")) : 0f;
@@ -206,7 +202,7 @@ public class ImportService {
 		return order;
 	}
 
-	protected String normaliseTelephoneNumber(final String telephone) {
+	String normaliseTelephoneNumber(final String telephone) {
 		String normalised = null;
 
 		// normalise the telephone format, e.g. "0161 370 3070", "07867 123 456"
@@ -367,7 +363,7 @@ public class ImportService {
 		return setter;
 	}
 
-	private <T> void normaliseImportedFields(final T imported) {
+	private static <T> void normaliseImportedFields(final T imported) {
 		Arrays.stream(imported.getClass().getDeclaredMethods())
 				// find the getter methods on the import object (public accessible returning Strings)
 				.filter(method -> method.getName().startsWith("get") && method.canAccess(imported) && String.class.equals(method.getReturnType()))
@@ -407,7 +403,7 @@ public class ImportService {
 		LOGGER.info("Read [{}] records of type [{}]", data.size(), dataType.getSimpleName());
 
 		// normalise all fields for each imported datum
-		data.stream().forEach(datum -> normaliseImportedFields(datum));
+		data.forEach(ImportService::normaliseImportedFields);
 
 		return data;
 	}

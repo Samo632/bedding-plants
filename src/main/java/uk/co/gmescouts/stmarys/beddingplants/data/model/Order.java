@@ -83,9 +83,7 @@ public class Order {
 	public void addOrderItem(final OrderItem orderItem) {
 		if (orderItem != null) {
 			// replace existing OrderItem, if present
-			if (orderItems.contains(orderItem)) {
-				orderItems.remove(orderItem);
-			}
+			orderItems.remove(orderItem);
 			orderItems.add(orderItem);
 			orderItem.setOrder(this);
 		}

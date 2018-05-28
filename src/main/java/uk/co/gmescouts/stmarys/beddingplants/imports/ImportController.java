@@ -26,7 +26,7 @@ import uk.co.gmescouts.stmarys.beddingplants.sales.service.SalesService;
 public class ImportController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ImportController.class);
 
-	public final static String IMPORT_BASE_URL = "/import";
+	private final static String IMPORT_BASE_URL = "/import";
 
 	/*
 	 * Sales
@@ -84,10 +84,10 @@ public class ImportController {
 
 		try {
 			// do the import
-			final Sale sale = importService.importSaleFromExcelFile(file, saleYear, vat, orderImportsSheetName, plantImportsSheetName);
+			Sale sale = importService.importSaleFromExcelFile(file, saleYear, vat, orderImportsSheetName, plantImportsSheetName);
 
 			// save the created Sale
-			salesService.saveSale(sale);
+			sale = salesService.saveSale(sale);
 
 			// TODO: just return a summary of the Sale rather than the entire detail
 			return sale;
@@ -110,7 +110,7 @@ public class ImportController {
 			sale = importService.importOrdersToSaleFromExcelFile(file, orderImportsSheetName, sale);
 
 			// save the updated Sale
-			salesService.saveSale(sale);
+			sale = salesService.saveSale(sale);
 
 			// TODO: just return a summary of the Orders rather than the entire detail
 			return sale.getOrders();
@@ -133,7 +133,7 @@ public class ImportController {
 			sale = importService.importPlantsToSaleFromExcelFile(file, plantImportsSheetName, sale);
 
 			// save the updated Sale
-			salesService.saveSale(sale);
+			sale = salesService.saveSale(sale);
 
 			// TODO: just return a summary of the Orders rather than the entire detail
 			return sale.getPlants();

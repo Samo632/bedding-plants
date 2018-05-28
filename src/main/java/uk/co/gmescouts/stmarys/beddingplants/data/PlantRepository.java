@@ -10,10 +10,8 @@ import uk.co.gmescouts.stmarys.beddingplants.data.model.Plant;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Sale;
 
 public interface PlantRepository extends JpaRepository<Plant, Long> {
-	Plant findByNumAndSale(Integer num, Sale sale);
-
 	Plant findByNumAndSaleYear(Integer num, Integer saleYear);
 
 	@OrderBy("num")
-	Set<Plant> findBySale(Sale sale);
+	Set<Plant> findBySaleYear(Integer saleYear);
 }

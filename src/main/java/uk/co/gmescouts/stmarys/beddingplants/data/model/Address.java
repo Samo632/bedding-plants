@@ -61,10 +61,8 @@ public class Address {
 	public void addCustomer(final Customer customer) {
 		if (customer != null) {
 			// replace existing Customer, if present
-			if (customers.contains(customer)) {
-				customers.remove(customer);
-			}
-			this.customers.add(customer);
+			customers.remove(customer);
+			customers.add(customer);
 			customer.setAddress(this);
 		}
 	}

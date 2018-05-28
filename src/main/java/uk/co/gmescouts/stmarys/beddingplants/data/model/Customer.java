@@ -62,9 +62,7 @@ public class Customer {
 	public void addOrder(final Order order) {
 		if (order != null) {
 			// replace existing Order, if present
-			if (orders.contains(order)) {
-				orders.remove(order);
-			}
+			orders.remove(order);
 			orders.add(order);
 			order.setCustomer(this);
 		}

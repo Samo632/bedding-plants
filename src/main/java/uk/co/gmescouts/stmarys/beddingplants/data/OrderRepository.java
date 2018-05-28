@@ -13,8 +13,6 @@ import uk.co.gmescouts.stmarys.beddingplants.data.model.OrderType;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Sale;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
-	Order findByNumAndSale(Integer num, Sale sale);
-
 	Order findByNumAndSaleYear(Integer num, Integer saleYear);
 
 	@OrderBy("num")
@@ -24,8 +22,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 	Set<Order> findByOrderTypeAndSale(OrderType orderType, Sale sale);
 
 	@OrderBy("num")
-	Set<Order> findByCustomerAndSale(Customer customer, Sale sale);
-
-	@OrderBy("num")
-	Set<Order> findBySale(Sale sale);
+	Set<Order> findBySaleYear(Integer saleYear);
 }

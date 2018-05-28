@@ -21,7 +21,7 @@ import uk.co.gmescouts.stmarys.beddingplants.sales.service.SalesService;
 public class SalesController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SalesController.class);
 
-	public final static String SALE_BASE_URL = "/sales";
+	private final static String SALE_BASE_URL = "/sales";
 
 	/*
 	 * Summaries
