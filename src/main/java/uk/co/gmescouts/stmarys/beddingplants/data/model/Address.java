@@ -14,6 +14,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -34,7 +35,7 @@ import lombok.NonNull;
 @AllArgsConstructor
 public class Address {
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	private String houseNameNumber;
@@ -48,6 +49,7 @@ public class Address {
 	@NonNull
 	@JsonIgnore
 	@Builder.Default
+	@OrderBy("surname, forename")
 	@Access(AccessType.FIELD)
 	@OneToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY, mappedBy = "address")
 	private Set<Customer> customers = new TreeSet<>(Comparator.comparing(Customer::getForename));
@@ -58,6 +60,10 @@ public class Address {
 
 	public void addCustomer(final Customer customer) {
 		if (customer != null) {
+			// replace existing Customer, if present
+			if (customers.contains(customer)) {
+				customers.remove(customer);
+			}
 			this.customers.add(customer);
 			customer.setAddress(this);
 		}

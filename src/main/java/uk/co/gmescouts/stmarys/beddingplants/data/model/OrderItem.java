@@ -3,6 +3,7 @@ package uk.co.gmescouts.stmarys.beddingplants.data.model;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
@@ -31,7 +32,7 @@ public class OrderItem {
 	@Id
 	public Long getId() {
 		// key on the Sale year, Order num and Plant num
-		return Long.valueOf(String.format("%d%02d%03d", order.getSale().getYear(), plant.getNum(), order.getNum()));
+		return Long.valueOf(String.format("%d%03d%02d", order.getSale().getYear(), order.getNum(), plant.getNum()));
 	}
 
 	public void setId(final Long id) {
@@ -50,5 +51,6 @@ public class OrderItem {
 
 	@NonNull
 	@Min(1)
+	@Column(nullable = false)
 	private Integer count;
 }

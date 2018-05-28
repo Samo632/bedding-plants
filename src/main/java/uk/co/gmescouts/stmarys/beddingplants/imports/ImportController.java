@@ -2,6 +2,7 @@ package uk.co.gmescouts.stmarys.beddingplants.imports;
 
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -9,36 +10,59 @@ import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import uk.co.gmescouts.stmarys.beddingplants.data.SaleRepository;
+import uk.co.gmescouts.stmarys.beddingplants.data.model.Order;
+import uk.co.gmescouts.stmarys.beddingplants.data.model.Plant;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Sale;
 import uk.co.gmescouts.stmarys.beddingplants.imports.service.ImportService;
+import uk.co.gmescouts.stmarys.beddingplants.sales.service.SalesService;
 
 @RestController
 public class ImportController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ImportController.class);
 
 	public final static String IMPORT_BASE_URL = "/import";
-	private final static String IMPORT_EXCEL = IMPORT_BASE_URL + "/excel";
+
+	/*
+	 * Sales
+	 */
+	private final static String IMPORT_SALE = IMPORT_BASE_URL + "/sale";
+	private final static String IMPORT_SALE_EXCEL = IMPORT_SALE + "/excel";
+
+	/*
+	 * Orders
+	 */
+	private final static String IMPORT_ORDERS = IMPORT_BASE_URL + "/orders";
+	private final static String IMPORT_ORDERS_EXCEL = IMPORT_ORDERS + "/excel";
+
+	/*
+	 * Plants
+	 */
+	private final static String IMPORT_PLANTS = IMPORT_BASE_URL + "/plants";
+	private final static String IMPORT_PLANTS_EXCEL = IMPORT_PLANTS + "/excel";
 
 	private final static Integer CURRENT_YEAR = Calendar.getInstance().get(Calendar.YEAR);
+
+	private final static String MEDIA_TYPE_XLS = "application/vnd.ms-excel";
+	private final static String MEDIA_TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
 	@Resource
 	private ImportService importService;
 
-	@Autowired
-	private SaleRepository saleRepository;
+	@Resource
+	private SalesService salesService;
 
-	@PostMapping(consumes = { "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-			MediaType.MULTIPART_FORM_DATA_VALUE }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE, value = IMPORT_EXCEL)
-	public Sale importSale(@RequestParam final MultipartFile file, @RequestParam(defaultValue = "20.0") final float vat,
-			@RequestParam(required = false) final Integer year) throws EncryptedDocumentException, InvalidFormatException, IOException {
+	@PostMapping(consumes = { MEDIA_TYPE_XLS, MEDIA_TYPE_XLSX,
+			MediaType.MULTIPART_FORM_DATA_VALUE }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE, value = IMPORT_SALE_EXCEL)
+	public Sale importSaleFromExcel(@RequestParam final MultipartFile file, @RequestParam(defaultValue = "20.0") final float vat,
+			@RequestParam(required = false) final Integer year, @RequestParam(required = false) final String orderImportsSheetName,
+			@RequestParam(required = false) final String plantImportsSheetName)
+			throws EncryptedDocumentException, InvalidFormatException, IOException {
 
 		Integer saleYear;
 		if (year == null) {
@@ -60,13 +84,59 @@ public class ImportController {
 
 		try {
 			// do the import
-			final Sale sale = importService.importSaleFromExcelFile(file, saleYear, vat);
+			final Sale sale = importService.importSaleFromExcelFile(file, saleYear, vat, orderImportsSheetName, plantImportsSheetName);
 
-			// store the created Sale object locally for later retrieval
-			saleRepository.save(sale);
+			// save the created Sale
+			salesService.saveSale(sale);
 
 			// TODO: just return a summary of the Sale rather than the entire detail
 			return sale;
+		} catch (final Exception e) {
+			LOGGER.error(String.format("Error during import: %s", e.getMessage()), e);
+			throw e;
+		}
+	}
+
+	@PostMapping(consumes = { MEDIA_TYPE_XLS, MEDIA_TYPE_XLSX,
+			MediaType.MULTIPART_FORM_DATA_VALUE }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE, value = IMPORT_ORDERS_EXCEL)
+	public Set<Order> importOrdersFromExcel(@RequestParam final MultipartFile file, @RequestParam(required = true) final Integer saleYear,
+			@RequestParam(required = false) final String orderImportsSheetName)
+			throws EncryptedDocumentException, InvalidFormatException, IOException {
+		try {
+			// get the Sale using the Year
+			Sale sale = salesService.findSaleByYear(saleYear);
+
+			// do the import
+			sale = importService.importOrdersToSaleFromExcelFile(file, orderImportsSheetName, sale);
+
+			// save the updated Sale
+			salesService.saveSale(sale);
+
+			// TODO: just return a summary of the Orders rather than the entire detail
+			return sale.getOrders();
+		} catch (final Exception e) {
+			LOGGER.error(String.format("Error during import: %s", e.getMessage()), e);
+			throw e;
+		}
+	}
+
+	@PostMapping(consumes = { MEDIA_TYPE_XLS, MEDIA_TYPE_XLSX,
+			MediaType.MULTIPART_FORM_DATA_VALUE }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE, value = IMPORT_PLANTS_EXCEL)
+	public Set<Plant> importPlantsFromExcel(@RequestParam final MultipartFile file, @RequestParam(required = true) final Integer saleYear,
+			@RequestParam(required = false) final String plantImportsSheetName)
+			throws EncryptedDocumentException, InvalidFormatException, IOException {
+		try {
+			// get the Sale using the Year
+			Sale sale = salesService.findSaleByYear(saleYear);
+
+			// do the import
+			sale = importService.importPlantsToSaleFromExcelFile(file, plantImportsSheetName, sale);
+
+			// save the updated Sale
+			salesService.saveSale(sale);
+
+			// TODO: just return a summary of the Orders rather than the entire detail
+			return sale.getPlants();
 		} catch (final Exception e) {
 			LOGGER.error(String.format("Error during import: %s", e.getMessage()), e);
 			throw e;

@@ -3,6 +3,7 @@ package uk.co.gmescouts.stmarys.beddingplants.data.model;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
@@ -31,7 +32,7 @@ public class Plant {
 	@Id
 	public Long getId() {
 		// key on the Sale year and Plant num
-		return Long.valueOf(String.format("%d%03d", sale.getYear(), this.num));
+		return Long.valueOf(String.format("%d%02d", sale.getYear(), this.num));
 	}
 
 	public void setId(final Long id) {
@@ -45,21 +46,26 @@ public class Plant {
 
 	@NonNull
 	@Min(1)
+	@Column(nullable = false)
 	private Integer num;
 
 	@NonNull
+	@Column(nullable = false)
 	private String name;
 
 	@NonNull
+	@Column(nullable = false)
 	private String variety;
 
 	private String details;
 
 	@NonNull
 	@Min(0)
+	@Column(nullable = false)
 	private Float price;
 
 	@NonNull
 	@Min(0)
+	@Column(nullable = false)
 	private Float cost;
 }

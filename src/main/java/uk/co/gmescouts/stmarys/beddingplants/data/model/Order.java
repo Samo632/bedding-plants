@@ -7,11 +7,13 @@ import java.util.TreeSet;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.validation.constraints.Min;
 
@@ -50,6 +52,7 @@ public class Order {
 
 	@NonNull
 	@Min(1)
+	@Column(nullable = false)
 	private Integer num;
 
 	@Access(AccessType.FIELD)
@@ -57,9 +60,11 @@ public class Order {
 	private Customer customer;
 
 	@NonNull
+	@Column(nullable = false)
 	private DeliveryDay deliveryDay;
 
 	@NonNull
+	@Column(nullable = false)
 	private OrderType orderType;
 
 	private String courtesyOfName;
@@ -70,12 +75,17 @@ public class Order {
 
 	@NonNull
 	@Builder.Default
+	@OrderBy("plant")
 	@Access(AccessType.FIELD)
 	@OneToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY, mappedBy = "order")
 	private Set<OrderItem> orderItems = new TreeSet<>(Comparator.comparingInt(oi -> oi.getPlant().getNum()));
 
 	public void addOrderItem(final OrderItem orderItem) {
 		if (orderItem != null) {
+			// replace existing OrderItem, if present
+			if (orderItems.contains(orderItem)) {
+				orderItems.remove(orderItem);
+			}
 			orderItems.add(orderItem);
 			orderItem.setOrder(this);
 		}

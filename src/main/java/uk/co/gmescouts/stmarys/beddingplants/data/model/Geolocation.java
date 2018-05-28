@@ -27,7 +27,7 @@ import lombok.NonNull;
 @AllArgsConstructor
 public class Geolocation {
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@NonNull

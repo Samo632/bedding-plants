@@ -1,11 +1,19 @@
 package uk.co.gmescouts.stmarys.beddingplants.data;
 
+import java.util.Set;
+
+import javax.persistence.OrderBy;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Plant;
+import uk.co.gmescouts.stmarys.beddingplants.data.model.Sale;
 
 public interface PlantRepository extends JpaRepository<Plant, Long> {
-	Plant findByNum(Integer num);
+	Plant findByNumAndSale(Integer num, Sale sale);
 
-	Plant findByName(String name);
+	Plant findByNumAndSaleYear(Integer num, Integer saleYear);
+
+	@OrderBy("num")
+	Set<Plant> findBySale(Sale sale);
 }

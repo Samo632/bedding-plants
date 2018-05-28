@@ -8,7 +8,7 @@ import com.poiji.annotation.ExcelRow;
 import lombok.Data;
 
 @Data
-public class OrderImport {
+public class ExcelOrder {
 	@ExcelRow
 	private int rowIndex;
 

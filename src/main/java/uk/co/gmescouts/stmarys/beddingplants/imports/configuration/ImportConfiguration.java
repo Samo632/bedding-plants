@@ -9,7 +9,6 @@ import com.poiji.option.PoijiOptions.PoijiOptionsBuilder;
 
 import lombok.Getter;
 import lombok.Setter;
-import uk.co.gmescouts.stmarys.beddingplants.imports.service.ImportService;
 
 @ConfigurationProperties(prefix = "beddingplants.import")
 @Configuration
@@ -21,11 +20,6 @@ public class ImportConfiguration {
 	@Getter
 	@Setter
 	public String plantImportsName;
-
-	@Bean
-	public ImportService getImportService() {
-		return new ImportService();
-	}
 
 	@Bean
 	public PoijiOptionsBuilder getPoijiOptionsBuilder() {
