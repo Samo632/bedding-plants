@@ -46,6 +46,7 @@ public class Address {
 
 	private String postcode;
 
+	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 	@NonNull
 	@JsonIgnore
 	@Builder.Default

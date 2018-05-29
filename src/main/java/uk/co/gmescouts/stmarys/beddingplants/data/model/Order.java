@@ -73,7 +73,8 @@ public class Order {
 
 	private Float paid;
 
-	@NonNull
+	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+    @NonNull
 	@Builder.Default
 	@OrderBy("plant")
 	@Access(AccessType.FIELD)

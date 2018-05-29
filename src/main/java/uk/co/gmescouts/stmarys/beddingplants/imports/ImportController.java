@@ -99,7 +99,7 @@ public class ImportController {
 
 	@PostMapping(consumes = { MEDIA_TYPE_XLS, MEDIA_TYPE_XLSX,
 			MediaType.MULTIPART_FORM_DATA_VALUE }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE, value = IMPORT_ORDERS_EXCEL)
-	public Set<Order> importOrdersFromExcel(@RequestParam final MultipartFile file, @RequestParam(required = true) final Integer saleYear,
+	public Set<Order> importOrdersFromExcel(@RequestParam final MultipartFile file, @RequestParam final Integer saleYear,
 			@RequestParam(required = false) final String orderImportsSheetName)
 			throws EncryptedDocumentException, InvalidFormatException, IOException {
 		try {
@@ -122,7 +122,7 @@ public class ImportController {
 
 	@PostMapping(consumes = { MEDIA_TYPE_XLS, MEDIA_TYPE_XLSX,
 			MediaType.MULTIPART_FORM_DATA_VALUE }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE, value = IMPORT_PLANTS_EXCEL)
-	public Set<Plant> importPlantsFromExcel(@RequestParam final MultipartFile file, @RequestParam(required = true) final Integer saleYear,
+	public Set<Plant> importPlantsFromExcel(@RequestParam final MultipartFile file, @RequestParam final Integer saleYear,
 			@RequestParam(required = false) final String plantImportsSheetName)
 			throws EncryptedDocumentException, InvalidFormatException, IOException {
 		try {

@@ -5,9 +5,9 @@ import java.util.Arrays;
 public enum OrderType {
 	Collect('C'), Deliver('D');
 
-	private Character type;
+	private final Character type;
 
-	private OrderType(final Character type) {
+	OrderType(final Character type) {
 		this.type = type;
 	}
 

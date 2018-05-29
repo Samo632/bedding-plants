@@ -61,4 +61,8 @@ public class SalesService {
 
 		return plantRepository.findByNumAndSaleYear(plantNumber, saleYear);
 	}
+
+	// TODO: Delete Sale(s)
+	// TODO: Delete Order(s)
+	// TODO: Delete Plant(s)
 }

@@ -39,13 +39,15 @@ public class Sale {
 	@Column(nullable = false)
 	private Float vat;
 
+	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 	@NonNull
 	@Builder.Default
 	@OrderBy("num")
 	@OneToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY, mappedBy = "sale")
 	private Set<Order> orders = new TreeSet<>(Comparator.comparingInt(Order::getNum));
 
-	@NonNull
+	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+    @NonNull
 	@Builder.Default
 	@OrderBy("num")
 	@OneToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY, mappedBy = "sale")

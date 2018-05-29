@@ -52,7 +52,8 @@ public class Customer {
 
 	private String telephone;
 
-	@NonNull
+	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+    @NonNull
 	@JsonIgnore
 	@Builder.Default
 	@OrderBy("num")

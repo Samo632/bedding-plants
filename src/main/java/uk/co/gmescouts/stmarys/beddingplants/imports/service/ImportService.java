@@ -16,6 +16,7 @@ import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -87,8 +88,12 @@ public class ImportService {
 			final String plantImportsSheetName) throws InvalidFormatException, EncryptedDocumentException, IOException {
 		LOGGER.info("Importing Sale from file [{}] for Order Year [{}] with VAT [{}]", file.getOriginalFilename(), year, vat);
 
-		// create the overall Sale
-		Sale sale = Sale.builder().year(year).vat(vat).build();
+		// check for existing Sale for the specified year
+		Sale sale = saleService.findSaleByYear(year);
+		if (sale == null) {
+			// create new Sale if doesn't exist
+			sale = Sale.builder().year(year).vat(vat).build();
+		}
 
 		// import Plants (and add to Sale)
 		sale = importPlantsToSaleFromExcelFile(file, plantImportsSheetName, sale);
@@ -143,7 +148,7 @@ public class ImportService {
 				StringUtils.defaultIfBlank(plantImportsSheetName, importConfiguration.getPlantImportsName()), ExcelPlant.class);
 
 		// convert to Plants
-		final Set<Plant> plants = importedPlants.stream().filter(ExcelPlant::isValid).map(ImportService::createPlant).collect(Collectors.toSet());
+		final Set<Plant> plants = importedPlants.stream().filter(ExcelPlant::isValid).map(this::createPlant).collect(Collectors.toSet());
 		LOGGER.info("Imported [{}] valid Plants", plants.size());
 
 		// add to Sale
@@ -153,7 +158,7 @@ public class ImportService {
 		return sale;
 	}
 
-	private static Plant createPlant(final ExcelPlant excelPlant) {
+	private Plant createPlant(final ExcelPlant excelPlant) {
 		LOGGER.trace("Convert imported Plant: [{}]", excelPlant);
 
 		final Float price = StringUtils.isNotBlank(excelPlant.getPrice()) ? Float.valueOf(excelPlant.getPrice().replaceFirst("£", "")) : 0f;
@@ -319,7 +324,7 @@ public class ImportService {
 			try {
 				final GeocodingResult[] results = GeocodingApi.geocode(geoApiContext, geolocatableAddress).await();
 
-				if (results != null & results.length > 0) {
+				if (ArrayUtils.isNotEmpty(results)) {
 					// TODO: some logic as maybe we don't want the first result every time?
 					final GeocodingResult result = results[0];
 					geolocation.setFormattedAddress(result.formattedAddress);
@@ -363,10 +368,11 @@ public class ImportService {
 		return setter;
 	}
 
-	private static <T> void normaliseImportedFields(final T imported) {
+	@SuppressWarnings("deprecation")
+	private <T> void normaliseImportedFields(final T imported) {
 		Arrays.stream(imported.getClass().getDeclaredMethods())
 				// find the getter methods on the import object (public accessible returning Strings)
-				.filter(method -> method.getName().startsWith("get") && method.canAccess(imported) && String.class.equals(method.getReturnType()))
+				.filter(method -> method.getName().startsWith("get") && method.isAccessible() && String.class.equals(method.getReturnType()))
 				// normalise the value and set back on the object
 				.forEach(getter -> {
 					try {
@@ -403,7 +409,7 @@ public class ImportService {
 		LOGGER.info("Read [{}] records of type [{}]", data.size(), dataType.getSimpleName());
 
 		// normalise all fields for each imported datum
-		data.forEach(ImportService::normaliseImportedFields);
+		data.forEach(this::normaliseImportedFields);
 
 		return data;
 	}

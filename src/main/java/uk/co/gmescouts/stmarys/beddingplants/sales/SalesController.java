@@ -51,7 +51,7 @@ public class SalesController {
 	}
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE, value = SALE_DETAIL)
-	public Sale getSaleDetail(@RequestParam(required = true) final Integer year) {
+	public Sale getSaleDetail(@RequestParam final Integer year) {
 		LOGGER.info("Finding details for Sale year [{}]", year);
 
 		final Sale sale = salesService.findSaleByYear(year);
@@ -62,7 +62,7 @@ public class SalesController {
 	}
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE, value = SALE_DETAIL_ORDER)
-	public Order getOrderDetail(@RequestParam(required = true) final Integer year, @RequestParam(required = true) final Integer orderNumber) {
+	public Order getOrderDetail(@RequestParam final Integer year, @RequestParam final Integer orderNumber) {
 		LOGGER.info("Finding details for Order [{}] from Sale year [{}]", orderNumber, year);
 
 		final Order order = salesService.findOrderByNumAndSaleYear(orderNumber, year);
@@ -73,7 +73,7 @@ public class SalesController {
 	}
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE, value = SALE_DETAIL_PLANT)
-	public Plant getPlantDetail(@RequestParam(required = true) final Integer year, @RequestParam(required = true) final Integer plantNumber) {
+	public Plant getPlantDetail(@RequestParam final Integer year, @RequestParam final Integer plantNumber) {
 		LOGGER.info("Finding details for Plant [{}] from Sale year [{}]", plantNumber, year);
 
 		final Plant plant = salesService.findPlantByNumAndSaleYear(plantNumber, year);
@@ -82,4 +82,10 @@ public class SalesController {
 
 		return plant;
 	}
+
+	// TODO: Delete Sale(s)
+	// TODO: Delete Order(s)
+	// TODO: Delete Plant(s)
+
+	// TODO: Exports (separate ExportService?) - as PDF, as Excel(?)
 }
