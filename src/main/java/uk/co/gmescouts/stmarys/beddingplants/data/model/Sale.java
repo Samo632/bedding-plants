@@ -13,6 +13,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,14 +30,15 @@ import lombok.NonNull;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Sale {
-	@Id
 	@NonNull
-	@Column(nullable = false, unique = true)
+	@NotNull
+	@Id
+	@Column(unique = true)
 	private Integer year;
 
 	@NonNull
 	@Min(0)
-	@Column(nullable = false)
+	@NotNull
 	private Float vat;
 
 	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
@@ -47,7 +49,7 @@ public class Sale {
 	private Set<Order> orders = new TreeSet<>(Comparator.comparingInt(Order::getNum));
 
 	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    @NonNull
+	@NonNull
 	@Builder.Default
 	@OrderBy("num")
 	@OneToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY, mappedBy = "sale")

@@ -13,5 +13,10 @@
     "name": "beddingplants.geolocation.googleApiKey",
     "type": "java.lang.String",
     "description": "Google API-Key for use with the BeddingPlants application"
+  },
+  {
+    "name": "beddingplants.import.defaultCity",
+    "type": "java.lang.String",
+    "description": "City to use in Addresses if not specified in the import spreadsheet (where it's optional)"
   }
 ]}

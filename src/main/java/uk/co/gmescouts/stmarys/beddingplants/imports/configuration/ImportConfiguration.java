@@ -15,11 +15,15 @@ import lombok.Setter;
 public class ImportConfiguration {
 	@Getter
 	@Setter
-	public String orderImportsName;
+	private String orderImportsName;
 
 	@Getter
 	@Setter
-	public String plantImportsName;
+	private String plantImportsName;
+
+	@Getter
+	@Setter
+	private String defaultCity;
 
 	@Bean
 	public PoijiOptionsBuilder getPoijiOptionsBuilder() {

@@ -3,13 +3,13 @@ package uk.co.gmescouts.stmarys.beddingplants.data.model;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -19,12 +19,14 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.ToString;
 
 @Entity
 @Table(name = "plants")
 @Data
 @Builder
 @EqualsAndHashCode(of = { "sale", "num" })
+@ToString(exclude = { "sale" })
 @NoArgsConstructor
 @AllArgsConstructor
 public class Plant {
@@ -46,26 +48,26 @@ public class Plant {
 
 	@NonNull
 	@Min(1)
-	@Column(nullable = false)
+	@NotNull
 	private Integer num;
 
 	@NonNull
-	@Column(nullable = false)
+	@NotNull
 	private String name;
 
 	@NonNull
-	@Column(nullable = false)
+	@NotNull
 	private String variety;
 
 	private String details;
 
 	@NonNull
 	@Min(0)
-	@Column(nullable = false)
+	@NotNull
 	private Float price;
 
 	@NonNull
 	@Min(0)
-	@Column(nullable = false)
+	@NotNull
 	private Float cost;
 }

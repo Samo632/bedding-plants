@@ -7,7 +7,6 @@ import java.util.TreeSet;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
@@ -16,6 +15,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -25,12 +25,14 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.ToString;
 
 @Entity
 @Table(name = "orders")
 @Data
 @Builder
 @EqualsAndHashCode(of = { "sale", "num" })
+@ToString(exclude = { "sale" })
 @NoArgsConstructor
 @AllArgsConstructor
 public class Order {
@@ -51,8 +53,8 @@ public class Order {
 	private Sale sale;
 
 	@NonNull
+	@NotNull
 	@Min(1)
-	@Column(nullable = false)
 	private Integer num;
 
 	@Access(AccessType.FIELD)
@@ -60,11 +62,11 @@ public class Order {
 	private Customer customer;
 
 	@NonNull
-	@Column(nullable = false)
+	@NotNull
 	private DeliveryDay deliveryDay;
 
 	@NonNull
-	@Column(nullable = false)
+	@NotNull
 	private OrderType orderType;
 
 	private String courtesyOfName;
@@ -74,7 +76,7 @@ public class Order {
 	private Float paid;
 
 	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    @NonNull
+	@NonNull
 	@Builder.Default
 	@OrderBy("plant")
 	@Access(AccessType.FIELD)

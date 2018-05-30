@@ -39,6 +39,9 @@ public class ExcelOrder {
 	@ExcelCellName("Town")
 	private String town;
 
+	@ExcelCellName("City")
+	private String city;
+
 	@ExcelCellName("Postcode")
 	private String postcode;
 

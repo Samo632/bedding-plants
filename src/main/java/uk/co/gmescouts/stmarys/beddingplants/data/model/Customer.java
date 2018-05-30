@@ -4,17 +4,17 @@ import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -24,27 +24,36 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.ToString;
 
 @Entity
 @Table(name = "customers")
 @Data
 @Builder
-@EqualsAndHashCode(exclude = { "orders" })
+@EqualsAndHashCode(of = { "forename", "surname" })
+@ToString(exclude = { "orders" })
 @NoArgsConstructor
 @AllArgsConstructor
 public class Customer {
+	@JsonIgnore
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	public String getName() {
+		return String.format("%s %s", forename, surname);
+	}
+
+	public void setName(final String name) {
+		// intentionally blank, for Entity/Jackson construction only
+	}
 
 	@NonNull
-	@Column(nullable = false)
+	@NotNull
 	private String forename;
 
 	@NonNull
-	@Column(nullable = false)
+	@NotNull
 	private String surname;
 
+	@Access(AccessType.FIELD)
 	@ManyToOne(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	private Address address;
 
@@ -53,9 +62,10 @@ public class Customer {
 	private String telephone;
 
 	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    @NonNull
+	@NonNull
 	@JsonIgnore
 	@Builder.Default
+	@Access(AccessType.FIELD)
 	@OrderBy("num")
 	@OneToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY, mappedBy = "customer")
 	private Set<Order> orders = new TreeSet<>(Comparator.comparingInt(Order::getNum));

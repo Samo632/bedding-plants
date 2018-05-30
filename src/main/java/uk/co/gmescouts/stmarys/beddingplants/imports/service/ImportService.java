@@ -158,6 +158,8 @@ public class ImportService {
 		return sale;
 	}
 
+	// TODO: Import addresses (from Excel)
+
 	private Plant createPlant(final ExcelPlant excelPlant) {
 		LOGGER.trace("Convert imported Plant: [{}]", excelPlant);
 
@@ -240,15 +242,15 @@ public class ImportService {
 	}
 
 	private Customer createCustomer(final ExcelOrder excelOrder) {
-		// create Address
-		final Address address = createAddress(excelOrder);
-
 		// create Customer (without Address)
 		final Customer customer = Customer.builder().forename(excelOrder.getForename()).surname(excelOrder.getSurname())
 				.emailAddress(excelOrder.getEmailAddress()).telephone(normaliseTelephoneNumber(excelOrder.getTelephone())).build();
 
-		// link Customer with Address
-		address.addCustomer(customer);
+		// link Customer with Address (if present
+		final Address address = createAddress(excelOrder);
+		if (address != null) {
+			address.addCustomer(customer);
+		}
 
 		return customer;
 	}
@@ -269,57 +271,27 @@ public class ImportService {
 		final StringBuilder postcodeBuilder = new StringBuilder(excelOrder.getPostcode().replaceAll("\\s+", ""));
 		postcodeBuilder.insert(postcodeBuilder.length() > 3 ? postcodeBuilder.length() - 3 : 0, " ");
 
-		return Address.builder().houseNameNumber(excelOrder.getHouseNameNumber()).street(street).town(excelOrder.getTown())
+		final Address address = Address.builder().houseNameNumber(excelOrder.getHouseNameNumber()).street(street).town(excelOrder.getTown())
 				.postcode(postcodeBuilder.toString()).build();
-	}
 
-	private boolean isAddressGeolocatable(final Address address) {
-		return address != null && ((StringUtils.isNotBlank(address.getStreet()) && StringUtils.isNotBlank(address.getTown()))
-				|| StringUtils.isNotBlank(address.getPostcode()));
-	}
-
-	private String getGeolocatableAddress(final Address address) {
-		final StringBuilder geo = new StringBuilder(100);
-
-		// house name/number
-		if (StringUtils.isNotBlank(address.getHouseNameNumber())) {
-			geo.append(address.getHouseNameNumber());
+		// if there's something in the Address, add the City for Geolocation and return
+		if (address.isGeolocatable()) {
+			address.setCity(StringUtils.defaultIfEmpty(excelOrder.getCity(), importConfiguration.getDefaultCity()));
+			return address;
 		}
 
-		// street
-		if (StringUtils.isNotBlank(address.getStreet())) {
-			if (geo.length() > 0) {
-				geo.append(" ");
-			}
-			geo.append(address.getStreet());
-		}
-
-		// town
-		if (StringUtils.isNotBlank(address.getTown())) {
-			if (geo.length() > 0) {
-				geo.append(", ");
-			}
-			geo.append(address.getTown());
-		}
-
-		// postcode
-		if (StringUtils.isNotBlank(address.getPostcode())) {
-			if (geo.length() > 0) {
-				geo.append(", ");
-			}
-			geo.append(address.getPostcode());
-		}
-
-		return geo.toString();
+		// if Address unusable, don't return anything
+		return null;
 	}
 
 	private void geolocateOrderAddress(final Order order) {
 		// TODO: do this in a separate GeolocationService?
 
 		final Address address = order.getCustomer().getAddress();
-		if (isAddressGeolocatable(address)) {
+		if (address != null && address.isGeolocatable()) {
 			// TODO: check for existing, geolocate if none
-			final String geolocatableAddress = getGeolocatableAddress(address);
+			final String geolocatableAddress = address.getGeolocatableAddress();
+			LOGGER.debug("Geolocating address [{}]", geolocatableAddress);
 			final Geolocation geolocation = Geolocation.builder().address(address).build();
 			try {
 				final GeocodingResult[] results = GeocodingApi.geocode(geoApiContext, geolocatableAddress).await();
@@ -327,15 +299,21 @@ public class ImportService {
 				if (ArrayUtils.isNotEmpty(results)) {
 					// TODO: some logic as maybe we don't want the first result every time?
 					final GeocodingResult result = results[0];
+
+					LOGGER.debug("Geolocated formatted address [{}]", result.formattedAddress);
 					geolocation.setFormattedAddress(result.formattedAddress);
 					geolocation.setLatitude(result.geometry.location.lat);
 					geolocation.setLongitude(result.geometry.location.lng);
+
+					// set the Geolocation on the Address, assuming something found (otherwise Address not updated)
+					if (StringUtils.isNotEmpty(result.formattedAddress)) {
+						address.setGeolocation(geolocation);
+					}
 				}
 			} catch (IllegalStateException | ApiException | InterruptedException | IOException e) {
 				LOGGER.warn(String.format("Unable to geocode address [%s] for order [%d]: %s", geolocatableAddress, order.getNum(), e.getMessage()),
 						e);
 			}
-			address.setGeolocation(geolocation);
 		}
 	}
 
