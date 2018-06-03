@@ -37,6 +37,22 @@ public class SalesService {
 		return saleRepository.save(sale);
 	}
 
+	public Boolean deleteSale(@NotNull final Integer year) {
+		LOGGER.info("Deleting Sale [{}]", year);
+
+		// first check if there is a matching Sale
+		final Sale sale = saleRepository.findByYear(year);
+
+		// delete it
+		boolean deleted = false;
+		if (sale != null) {
+			saleRepository.delete(sale);
+			deleted = true;
+		}
+
+		return deleted;
+	}
+
 	public Sale findSaleByYear(@NotNull final Integer year) {
 		LOGGER.info("Finding Sale by Year [{}]", year);
 
@@ -53,7 +69,7 @@ public class SalesService {
 	public Order findOrderByNumAndSaleYear(@NotNull final Integer orderNumber, @NotNull final Integer saleYear) {
 		LOGGER.info("Finding Order [{}] for Sale [{}]", orderNumber, saleYear);
 
-		return orderRepository.findByNumAndSaleYear(orderNumber, saleYear);
+		return orderRepository.findByNumAndCustomerSaleYear(orderNumber, saleYear);
 	}
 
 	public Plant findPlantByNumAndSaleYear(@NotNull final Integer plantNumber, @NotNull final Integer saleYear) {

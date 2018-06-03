@@ -2,9 +2,7 @@ package uk.co.gmescouts.stmarys.beddingplants.data.model;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -34,7 +32,7 @@ public class OrderItem {
 	@Id
 	public Long getId() {
 		// key on the Sale year, Order num and Plant num
-		return Long.valueOf(String.format("%d%03d%02d", order.getSale().getYear(), order.getNum(), plant.getNum()));
+		return Long.valueOf(String.format("%d%03d%02d", order.getCustomer().getSale().getYear(), order.getNum(), plant.getNum()));
 	}
 
 	public void setId(final Long id) {
@@ -43,12 +41,12 @@ public class OrderItem {
 
 	@JsonIgnore
 	@Access(AccessType.FIELD)
-	@ManyToOne(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@ManyToOne
 	private Order order;
 
 	@NonNull
 	@Access(AccessType.FIELD)
-	@ManyToOne(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@ManyToOne
 	private Plant plant;
 
 	@NonNull

@@ -8,6 +8,7 @@ import javax.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,6 +35,11 @@ public class SalesController {
 	private final static String SALE_DETAIL = SALE_BASE_URL + "/detail";
 	private final static String SALE_DETAIL_ORDER = SALE_SUMMARY + "/order";
 	private final static String SALE_DETAIL_PLANT = SALE_SUMMARY + "/plant";
+
+	/*
+	 * Deletes
+	 */
+	private final static String DELETE_SALE = SALE_BASE_URL;
 
 	@Resource
 	private SalesService salesService;
@@ -83,7 +89,17 @@ public class SalesController {
 		return plant;
 	}
 
-	// TODO: Delete Sale(s)
+	@DeleteMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE, value = DELETE_SALE)
+	public Boolean deleteSale(@RequestParam final Integer year) {
+		LOGGER.info("Deleting Sale [{}]", year);
+
+		final boolean deleted = salesService.deleteSale(year);
+
+		LOGGER.debug("Sale [{}] deleted [{}]", year, deleted);
+
+		return deleted;
+	}
+
 	// TODO: Delete Order(s)
 	// TODO: Delete Plant(s)
 

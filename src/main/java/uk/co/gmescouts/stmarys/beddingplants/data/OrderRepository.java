@@ -9,17 +9,16 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.DeliveryDay;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Order;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.OrderType;
-import uk.co.gmescouts.stmarys.beddingplants.data.model.Sale;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
-	Order findByNumAndSaleYear(Integer num, Integer saleYear);
+	Order findByNumAndCustomerSaleYear(Integer num, Integer customerSaleYear);
 
 	@OrderBy("num")
-	Set<Order> findByDeliveryDayAndSale(DeliveryDay deliveryDay, Sale sale);
+	Set<Order> findByDeliveryDayAndCustomerSaleYear(DeliveryDay deliveryDay, Integer customerSaleYear);
 
 	@OrderBy("num")
-	Set<Order> findByOrderTypeAndSale(OrderType orderType, Sale sale);
+	Set<Order> findByOrderTypeAndCustomerSaleYear(OrderType orderType, Integer customerSaleYear);
 
 	@OrderBy("num")
-	Set<Order> findBySaleYear(Integer saleYear);
+	Set<Order> findByCustomerSaleYear(Integer customerSaleYear);
 }

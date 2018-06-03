@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import uk.co.gmescouts.stmarys.beddingplants.data.model.Order;
+import uk.co.gmescouts.stmarys.beddingplants.data.model.Customer;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Plant;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Sale;
 import uk.co.gmescouts.stmarys.beddingplants.imports.service.ImportService;
@@ -37,8 +37,8 @@ public class ImportController {
 	/*
 	 * Orders
 	 */
-	private final static String IMPORT_ORDERS = IMPORT_BASE_URL + "/orders";
-	private final static String IMPORT_ORDERS_EXCEL = IMPORT_ORDERS + "/excel";
+	private final static String IMPORT_CUSTOMERS = IMPORT_BASE_URL + "/customers";
+	private final static String IMPORT_CUSTOMERS_EXCEL = IMPORT_CUSTOMERS + "/excel";
 
 	/*
 	 * Plants
@@ -84,10 +84,7 @@ public class ImportController {
 
 		try {
 			// do the import
-			Sale sale = importService.importSaleFromExcelFile(file, saleYear, vat, orderImportsSheetName, plantImportsSheetName);
-
-			// save the created Sale
-			sale = salesService.saveSale(sale);
+			final Sale sale = importService.importSaleFromExcelFile(file, saleYear, vat, orderImportsSheetName, plantImportsSheetName);
 
 			// TODO: just return a summary of the Sale rather than the entire detail
 			return sale;
@@ -98,22 +95,16 @@ public class ImportController {
 	}
 
 	@PostMapping(consumes = { MEDIA_TYPE_XLS, MEDIA_TYPE_XLSX,
-			MediaType.MULTIPART_FORM_DATA_VALUE }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE, value = IMPORT_ORDERS_EXCEL)
-	public Set<Order> importOrdersFromExcel(@RequestParam final MultipartFile file, @RequestParam final Integer saleYear,
+			MediaType.MULTIPART_FORM_DATA_VALUE }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE, value = IMPORT_CUSTOMERS_EXCEL)
+	public Set<Customer> importCustomersFromExcel(@RequestParam final MultipartFile file, @RequestParam final Integer saleYear,
 			@RequestParam(required = false) final String orderImportsSheetName)
 			throws EncryptedDocumentException, InvalidFormatException, IOException {
 		try {
-			// get the Sale using the Year
-			Sale sale = salesService.findSaleByYear(saleYear);
-
 			// do the import
-			sale = importService.importOrdersToSaleFromExcelFile(file, orderImportsSheetName, sale);
+			final Sale sale = importService.importCustomersFromExcel(file, orderImportsSheetName, saleYear);
 
-			// save the updated Sale
-			sale = salesService.saveSale(sale);
-
-			// TODO: just return a summary of the Orders rather than the entire detail
-			return sale.getOrders();
+			// TODO: just return a summary of the Customers rather than the entire detail
+			return sale.getCustomers();
 		} catch (final Exception e) {
 			LOGGER.error(String.format("Error during import: %s", e.getMessage()), e);
 			throw e;
@@ -126,14 +117,8 @@ public class ImportController {
 			@RequestParam(required = false) final String plantImportsSheetName)
 			throws EncryptedDocumentException, InvalidFormatException, IOException {
 		try {
-			// get the Sale using the Year
-			Sale sale = salesService.findSaleByYear(saleYear);
-
 			// do the import
-			sale = importService.importPlantsToSaleFromExcelFile(file, plantImportsSheetName, sale);
-
-			// save the updated Sale
-			sale = salesService.saveSale(sale);
+			final Sale sale = importService.importPlantsFromExcel(file, plantImportsSheetName, saleYear);
 
 			// TODO: just return a summary of the Orders rather than the entire detail
 			return sale.getPlants();
@@ -142,6 +127,4 @@ public class ImportController {
 			throw e;
 		}
 	}
-
-	// TODO: Import addresses (from Excel)
 }

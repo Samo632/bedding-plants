@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -62,7 +63,7 @@ public class ImportService {
 	private GeoApiContext geoApiContext;
 
 	@Resource
-	private SalesService saleService;
+	private SalesService salesService;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ImportService.class);
 
@@ -84,31 +85,51 @@ public class ImportService {
 
 	private final static Map<Method, Method> IMPORTED_METHOD_CACHE = new HashMap<>(100, 1);
 
-	public Sale importSaleFromExcelFile(final MultipartFile file, final Integer year, final Float vat, final String orderImportsSheetName,
+	private final Set<Address> importedAddresses = new HashSet<>(500);
+
+	public Sale importSaleFromExcelFile(final MultipartFile file, final Integer saleYear, final Float vat, final String orderImportsSheetName,
 			final String plantImportsSheetName) throws InvalidFormatException, EncryptedDocumentException, IOException {
-		LOGGER.info("Importing Sale from file [{}] for Order Year [{}] with VAT [{}]", file.getOriginalFilename(), year, vat);
+		LOGGER.info("Importing Sale from file [{}] for Order Year [{}] with VAT [{}]", file.getOriginalFilename(), saleYear, vat);
 
 		// check for existing Sale for the specified year
-		Sale sale = saleService.findSaleByYear(year);
+		Sale sale = salesService.findSaleByYear(saleYear);
 		if (sale == null) {
-			// create new Sale if doesn't exist
-			sale = Sale.builder().year(year).vat(vat).build();
+			// create new Sale if doesn't exist and persist
+			sale = salesService.saveSale(Sale.builder().year(saleYear).vat(vat).build());
 		}
 
 		// import Plants (and add to Sale)
-		sale = importPlantsToSaleFromExcelFile(file, plantImportsSheetName, sale);
+		sale = updateSaleWithImportedPlantsFromExcel(file, plantImportsSheetName, sale);
 
 		// import Orders (and add to Sale)
-		sale = importOrdersToSaleFromExcelFile(file, orderImportsSheetName, sale);
+		sale = updateSaleWithImportedCustomersFromExcel(file, orderImportsSheetName, sale);
 
 		// return the Sale
-		return sale;
+		return salesService.saveSale(sale);
 	}
 
-	public Sale importOrdersToSaleFromExcelFile(final MultipartFile file, final String orderImportsSheetName, @NotNull final Sale sale)
+	public Sale importCustomersFromExcel(final MultipartFile file, final String orderImportsSheetName, @NotNull final Integer saleYear)
 			throws InvalidFormatException, EncryptedDocumentException, IOException {
-		LOGGER.info("Importing Orders from file [{}]", file.getOriginalFilename());
+		// get the Sale using the Year
+		final Sale sale = salesService.findSaleByYear(saleYear);
 
+		return updateSaleWithImportedCustomersFromExcel(file, orderImportsSheetName, sale);
+	}
+
+	public Sale importPlantsFromExcel(final MultipartFile file, final String plantImportsSheetName, @NotNull final Integer saleYear)
+			throws InvalidFormatException, EncryptedDocumentException, IOException {
+		// get the Sale using the Year
+		final Sale sale = salesService.findSaleByYear(saleYear);
+
+		// return the updated Sale
+		return updateSaleWithImportedPlantsFromExcel(file, plantImportsSheetName, sale);
+	}
+
+	private Sale updateSaleWithImportedCustomersFromExcel(final MultipartFile file, final String orderImportsSheetName, @NotNull final Sale sale)
+			throws InvalidFormatException, EncryptedDocumentException, IOException {
+		LOGGER.info("Importing Orders from file [{}] for Sale [{}]", file.getOriginalFilename(), sale.getYear());
+
+		// check the Sale contains some Plants
 		final Set<Plant> plants = sale.getPlants();
 		if (plants == null || plants.size() <= 0) {
 			throw new IllegalArgumentException(String.format("Cannot import Orders for a Sale without Plants [%d]", sale.getYear()));
@@ -121,24 +142,44 @@ public class ImportService {
 		final List<ExcelOrder> importedOrders = readDataFromExcelFile(file.getInputStream(), workbook,
 				StringUtils.defaultIfBlank(orderImportsSheetName, importConfiguration.getOrderImportsName()), ExcelOrder.class);
 
-		// convert to Orders
-		final Set<Order> orders = importedOrders.stream().filter(ExcelOrder::isValid).map(order -> createOrder(order, plants))
-				.collect(Collectors.toSet());
-		LOGGER.info("Imported [{}] valid orders", orders.size());
+		// prepare address cache for import
+		// TODO: surely there's a JPA way of handling this though, right?
+		importedAddresses.clear();
 
-		// geolocate and add to Sale
-		orders.forEach(order -> {
-			geolocateOrderAddress(order);
-			sale.addOrder(order);
+		// convert to Orders
+		final List<Customer> customerOrders = importedOrders.stream().filter(ExcelOrder::isValid).map(order -> createCustomer(order, plants))
+				.collect(Collectors.toList());
+		LOGGER.info("Imported [{}] valid Customer Orders", customerOrders.size());
+
+		// merge duplicate Customers and aggregate Orders
+		final Set<Customer> customers = new HashSet<>();
+		customerOrders.forEach(customerOrder -> {
+			// is Customer already present?
+			if (customers.contains(customerOrder)) {
+				final Customer existingCustomer = customers.stream().filter(customerOrder::equals).findFirst().get();
+
+				// add new Order(s) to existing Customer
+				customerOrder.getOrders().forEach(existingCustomer::addOrder);
+			} else {
+				// add new Customer with their Order
+				customers.add(customerOrder);
+			}
+		});
+
+		// add Customer to Sale
+		// done as a second loop to avoid confusing the Customer#equals when looking for duplicates above
+		customers.forEach(customer -> {
+			// add to Sale
+			sale.addCustomer(customer);
 		});
 
 		// return the updated Sale
-		return sale;
+		return salesService.saveSale(sale);
 	}
 
-	public Sale importPlantsToSaleFromExcelFile(final MultipartFile file, final String plantImportsSheetName, @NotNull final Sale sale)
+	private Sale updateSaleWithImportedPlantsFromExcel(final MultipartFile file, final String plantImportsSheetName, @NotNull final Sale sale)
 			throws InvalidFormatException, EncryptedDocumentException, IOException {
-		LOGGER.info("Importing Plants from file [{}]", file.getOriginalFilename());
+		LOGGER.info("Importing Plants from file [{}] for Sale [{}]", file.getOriginalFilename(), sale.getYear());
 
 		// get Workbook from file (ensure we can read it and determine the type)
 		final Workbook workbook = WorkbookFactory.create(file.getInputStream());
@@ -155,10 +196,8 @@ public class ImportService {
 		plants.forEach(sale::addPlant);
 
 		// return the updated Sale
-		return sale;
+		return salesService.saveSale(sale);
 	}
-
-	// TODO: Import addresses (from Excel)
 
 	private Plant createPlant(final ExcelPlant excelPlant) {
 		LOGGER.trace("Convert imported Plant: [{}]", excelPlant);
@@ -170,12 +209,27 @@ public class ImportService {
 				.details(excelPlant.getDetails()).price(price).cost(cost).build();
 	}
 
-	private Order createOrder(final ExcelOrder excelOrder, @NotNull @Size(min = 1) final Set<Plant> plants) {
+	private Customer createCustomer(final ExcelOrder excelOrder, final Set<Plant> plants) {
 		LOGGER.trace("Convert imported Order: [{}]", excelOrder);
 
-		// create Customer
-		final Customer customer = createCustomer(excelOrder);
+		// create Customer (without Address)
+		final Customer customer = Customer.builder().forename(excelOrder.getForename()).surname(excelOrder.getSurname())
+				.emailAddress(excelOrder.getEmailAddress()).telephone(normaliseTelephoneNumber(excelOrder.getTelephone())).build();
 
+		// add Order
+		final Order order = createOrder(excelOrder, plants);
+		customer.addOrder(order);
+
+		// link Customer with Address (if present)
+		final Address address = createAddress(excelOrder);
+		if (address != null) {
+			address.addCustomer(customer);
+		}
+
+		return customer;
+	}
+
+	private Order createOrder(final ExcelOrder excelOrder, @NotNull @Size(min = 1) final Set<Plant> plants) {
 		// determine DeliveryDay (default is Saturday if not present)
 		final DeliveryDay deliveryDay = StringUtils.isNotBlank(excelOrder.getDeliveryDay())
 				? DeliveryDay.valueOf(StringUtils.capitalize(excelOrder.getDeliveryDay()))
@@ -184,9 +238,6 @@ public class ImportService {
 		// create Order (without Customer or OrderItems)
 		final Order order = Order.builder().num(Integer.valueOf(excelOrder.getOrderNumber())).deliveryDay(deliveryDay)
 				.orderType(OrderType.valueOf(excelOrder.getCollectDeliver().toUpperCase().charAt(0))).build();
-
-		// link the Order with the Customer
-		customer.addOrder(order);
 
 		// determine requested number of each plant and create OrderItems on the Order
 		for (final Plant plant : plants) {
@@ -241,20 +292,6 @@ public class ImportService {
 		return normalised;
 	}
 
-	private Customer createCustomer(final ExcelOrder excelOrder) {
-		// create Customer (without Address)
-		final Customer customer = Customer.builder().forename(excelOrder.getForename()).surname(excelOrder.getSurname())
-				.emailAddress(excelOrder.getEmailAddress()).telephone(normaliseTelephoneNumber(excelOrder.getTelephone())).build();
-
-		// link Customer with Address (if present
-		final Address address = createAddress(excelOrder);
-		if (address != null) {
-			address.addCustomer(customer);
-		}
-
-		return customer;
-	}
-
 	private Address createAddress(final ExcelOrder excelOrder) {
 		String street = excelOrder.getStreet();
 		if (StringUtils.isNotBlank(excelOrder.getStreet())) {
@@ -277,22 +314,29 @@ public class ImportService {
 		// if there's something in the Address, add the City for Geolocation and return
 		if (address.isGeolocatable()) {
 			address.setCity(StringUtils.defaultIfEmpty(excelOrder.getCity(), importConfiguration.getDefaultCity()));
-			return address;
+
+			// store Address for later re-use
+			if (!importedAddresses.contains(address)) {
+				// geolocate Address
+				geolocateAddress(address);
+
+				importedAddresses.add(address);
+			}
+
+			return importedAddresses.stream().filter(address::equals).findFirst().get();
 		}
 
 		// if Address unusable, don't return anything
 		return null;
 	}
 
-	private void geolocateOrderAddress(final Order order) {
+	private void geolocateAddress(@NotNull final Address address) {
 		// TODO: do this in a separate GeolocationService?
 
-		final Address address = order.getCustomer().getAddress();
-		if (address != null && address.isGeolocatable()) {
+		if (address.isGeolocatable()) {
 			// TODO: check for existing, geolocate if none
 			final String geolocatableAddress = address.getGeolocatableAddress();
-			LOGGER.debug("Geolocating address [{}]", geolocatableAddress);
-			final Geolocation geolocation = Geolocation.builder().address(address).build();
+			final Geolocation geolocation = new Geolocation();
 			try {
 				final GeocodingResult[] results = GeocodingApi.geocode(geoApiContext, geolocatableAddress).await();
 
@@ -300,7 +344,6 @@ public class ImportService {
 					// TODO: some logic as maybe we don't want the first result every time?
 					final GeocodingResult result = results[0];
 
-					LOGGER.debug("Geolocated formatted address [{}]", result.formattedAddress);
 					geolocation.setFormattedAddress(result.formattedAddress);
 					geolocation.setLatitude(result.geometry.location.lat);
 					geolocation.setLongitude(result.geometry.location.lng);
@@ -311,8 +354,7 @@ public class ImportService {
 					}
 				}
 			} catch (IllegalStateException | ApiException | InterruptedException | IOException e) {
-				LOGGER.warn(String.format("Unable to geocode address [%s] for order [%d]: %s", geolocatableAddress, order.getNum(), e.getMessage()),
-						e);
+				LOGGER.warn(String.format("Unable to geocode address [%s]: %s", geolocatableAddress, e.getMessage()), e);
 			}
 		}
 	}
@@ -360,13 +402,10 @@ public class ImportService {
 						// normalise the value
 						final String normalised = normaliseField(str);
 
-						// if the value was actually changed, set the value back on the imports object
-						if (!StringUtils.equals(str, normalised)) {
-							// find the equivalent setter method on the imports object
-							final Method setter = findSetter(imported, getter);
+						// find the equivalent setter method on the imports object
+						final Method setter = findSetter(imported, getter);
 
-							setter.invoke(imported, normalised);
-						}
+						setter.invoke(imported, normalised);
 					} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 						throw new IllegalStateException(String.format("Unable to normalise field value [%s] for imported object [%s]: %s",
 								getter.getName().replaceFirst("^get", ""), imported.getClass().getSimpleName(), e.getMessage()), e);

@@ -2,9 +2,7 @@ package uk.co.gmescouts.stmarys.beddingplants.data.model;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -43,7 +41,7 @@ public class Plant {
 
 	@JsonIgnore
 	@Access(AccessType.FIELD)
-	@ManyToOne(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@ManyToOne
 	private Sale sale;
 
 	@NonNull

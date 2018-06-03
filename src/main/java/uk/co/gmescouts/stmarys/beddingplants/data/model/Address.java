@@ -8,10 +8,8 @@ import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -106,21 +104,19 @@ public class Address {
 	@Builder.Default
 	@OrderBy("surname, forename")
 	@Access(AccessType.FIELD)
-	// FIXME: problems with items being "MERGE"d at the EntityManger level?
-	@OneToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY, mappedBy = "address")
+	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "address")
 	private Set<Customer> customers = new TreeSet<>(Comparator.comparing(Customer::getForename));
 
-	@Access(AccessType.FIELD)
-	// FIXME: problems with items being "MERGE"d at the EntityManger level?
-	@OneToOne(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY, mappedBy = "address")
 	private Geolocation geolocation;
 
 	public void addCustomer(final Customer customer) {
 		if (customer != null) {
+			// link Address to Customer
+			customer.setAddress(this);
+
 			// replace existing Customer, if present
 			customers.remove(customer);
 			customers.add(customer);
-			customer.setAddress(this);
 		}
 	}
 }

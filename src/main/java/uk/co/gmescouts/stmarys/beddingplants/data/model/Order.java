@@ -8,7 +8,8 @@ import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -31,8 +32,8 @@ import lombok.ToString;
 @Table(name = "orders")
 @Data
 @Builder
-@EqualsAndHashCode(of = { "sale", "num" })
-@ToString(exclude = { "sale" })
+@EqualsAndHashCode(of = { "customer", "num" })
+@ToString(exclude = { "customer" })
 @NoArgsConstructor
 @AllArgsConstructor
 public class Order {
@@ -40,33 +41,31 @@ public class Order {
 	@Id
 	public Long getId() {
 		// key on the Sale year and Order num
-		return Long.valueOf(String.format("%d%03d", sale.getYear(), this.num));
+		return Long.valueOf(String.format("%04d%03d", customer.getSale().getYear(), this.num));
 	}
 
 	public void setId(final Long id) {
 		// intentionally blank, only needed for Hibernate
 	}
 
-	@JsonIgnore
-	@Access(AccessType.FIELD)
-	@ManyToOne(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
-	private Sale sale;
-
 	@NonNull
 	@NotNull
 	@Min(1)
 	private Integer num;
 
+	@JsonIgnore
 	@Access(AccessType.FIELD)
-	@ManyToOne(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@ManyToOne
 	private Customer customer;
 
 	@NonNull
 	@NotNull
+	@Enumerated(EnumType.STRING)
 	private DeliveryDay deliveryDay;
 
 	@NonNull
 	@NotNull
+	@Enumerated(EnumType.STRING)
 	private OrderType orderType;
 
 	private String courtesyOfName;
@@ -80,15 +79,17 @@ public class Order {
 	@Builder.Default
 	@OrderBy("plant")
 	@Access(AccessType.FIELD)
-	@OneToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY, mappedBy = "order")
+	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "order")
 	private Set<OrderItem> orderItems = new TreeSet<>(Comparator.comparingInt(oi -> oi.getPlant().getNum()));
 
 	public void addOrderItem(final OrderItem orderItem) {
 		if (orderItem != null) {
+			// link Order to OrderItem
+			orderItem.setOrder(this);
+
 			// replace existing OrderItem, if present
 			orderItems.remove(orderItem);
 			orderItems.add(orderItem);
-			orderItem.setOrder(this);
 		}
 	}
 }

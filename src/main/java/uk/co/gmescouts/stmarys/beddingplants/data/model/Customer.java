@@ -8,7 +8,6 @@ import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -30,15 +29,15 @@ import lombok.ToString;
 @Table(name = "customers")
 @Data
 @Builder
-@EqualsAndHashCode(of = { "forename", "surname" })
-@ToString(exclude = { "orders" })
+@EqualsAndHashCode(of = { "forename", "surname", "sale" })
+@ToString(exclude = { "sale" })
 @NoArgsConstructor
 @AllArgsConstructor
 public class Customer {
 	@JsonIgnore
 	@Id
 	public String getName() {
-		return String.format("%s %s", forename, surname);
+		return String.format("%s %s-%04d", forename, surname, sale.getYear());
 	}
 
 	public void setName(final String name) {
@@ -54,28 +53,35 @@ public class Customer {
 	private String surname;
 
 	@Access(AccessType.FIELD)
-	@ManyToOne(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	// don't delete the Address just because the Customer is being removed (may belong to another Customer)
+	@ManyToOne(cascade = { CascadeType.DETACH, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE })
 	private Address address;
 
 	private String emailAddress;
 
 	private String telephone;
 
+	@JsonIgnore
+	@Access(AccessType.FIELD)
+	@ManyToOne
+	private Sale sale;
+
 	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 	@NonNull
-	@JsonIgnore
 	@Builder.Default
 	@Access(AccessType.FIELD)
 	@OrderBy("num")
-	@OneToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY, mappedBy = "customer")
+	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "customer")
 	private Set<Order> orders = new TreeSet<>(Comparator.comparingInt(Order::getNum));
 
 	public void addOrder(final Order order) {
 		if (order != null) {
+			// link Customer to Order
+			order.setCustomer(this);
+
 			// replace existing Order, if present
 			orders.remove(order);
 			orders.add(order);
-			order.setCustomer(this);
 		}
 	}
 }

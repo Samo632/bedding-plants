@@ -7,7 +7,6 @@ import java.util.TreeSet;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
@@ -44,32 +43,36 @@ public class Sale {
 	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 	@NonNull
 	@Builder.Default
-	@OrderBy("num")
-	@OneToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY, mappedBy = "sale")
-	private Set<Order> orders = new TreeSet<>(Comparator.comparingInt(Order::getNum));
+	@OrderBy("surname, forename")
+	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "sale")
+	private Set<Customer> customers = new TreeSet<>(Comparator.comparing(Customer::getName));
 
 	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 	@NonNull
 	@Builder.Default
 	@OrderBy("num")
-	@OneToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY, mappedBy = "sale")
+	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "sale")
 	private Set<Plant> plants = new TreeSet<>(Comparator.comparingInt(Plant::getNum));
 
-	public void addOrder(final Order order) {
-		if (order != null) {
-			// replace existing Order, if present
-			orders.remove(order);
-			orders.add(order);
-			order.setSale(this);
+	public void addCustomer(final Customer customer) {
+		if (customer != null) {
+			// link Sale to Customer
+			customer.setSale(this);
+
+			// replace existing Customer, if present
+			customers.remove(customer);
+			customers.add(customer);
 		}
 	}
 
 	public void addPlant(final Plant plant) {
 		if (plant != null) {
+			// link Sale to Plant
+			plant.setSale(this);
+
 			// replace existing Plant, if present
 			plants.remove(plant);
 			plants.add(plant);
-			plant.setSale(this);
 		}
 	}
 }
