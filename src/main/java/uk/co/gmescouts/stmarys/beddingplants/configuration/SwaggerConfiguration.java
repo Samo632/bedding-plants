@@ -42,7 +42,7 @@ public class SwaggerConfiguration {
 				.defaultModelExpandDepth(1)//
 				.defaultModelRendering(ModelRendering.MODEL)//
 				.displayRequestDuration(true)//
-				.docExpansion(DocExpansion.LIST)//
+				.docExpansion(DocExpansion.NONE)//
 				.filter(false)//
 				.maxDisplayedTags(null)//
 				.operationsSorter(OperationsSorter.ALPHA)//

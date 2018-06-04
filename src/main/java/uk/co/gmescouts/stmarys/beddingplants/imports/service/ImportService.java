@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -33,6 +34,7 @@ import com.google.maps.GeoApiContext;
 import com.google.maps.GeocodingApi;
 import com.google.maps.errors.ApiException;
 import com.google.maps.model.GeocodingResult;
+import com.google.maps.model.LocationType;
 import com.poiji.bind.Poiji;
 import com.poiji.exception.PoijiExcelType;
 import com.poiji.option.PoijiOptions.PoijiOptionsBuilder;
@@ -83,11 +85,11 @@ public class ImportService {
 		ADDRESS_CONTRACTIONS = Collections.unmodifiableMap(contractions);
 	}
 
-	private final static Map<Method, Method> IMPORTED_METHOD_CACHE = new HashMap<>(100, 1);
+	private final static Map<Method, Method> IMPORT_METHOD_CACHE = new HashMap<>(100, 1);
 
-	private final Set<Address> importedAddresses = new HashSet<>(500);
+	private final static Map<Address, Address> IMPORTED_ADDRESS_CACHE = new HashMap<>(500, 1);
 
-	public Sale importSaleFromExcelFile(final MultipartFile file, final Integer saleYear, final Float vat, final String orderImportsSheetName,
+	public Sale importSaleFromExcelFile(final MultipartFile file, final Integer saleYear, final Double vat, final String orderImportsSheetName,
 			final String plantImportsSheetName) throws InvalidFormatException, EncryptedDocumentException, IOException {
 		LOGGER.info("Importing Sale from file [{}] for Order Year [{}] with VAT [{}]", file.getOriginalFilename(), saleYear, vat);
 
@@ -144,7 +146,7 @@ public class ImportService {
 
 		// prepare address cache for import
 		// TODO: surely there's a JPA way of handling this though, right?
-		importedAddresses.clear();
+		IMPORTED_ADDRESS_CACHE.clear();
 
 		// convert to Orders
 		final List<Customer> customerOrders = importedOrders.stream().filter(ExcelOrder::isValid).map(order -> createCustomer(order, plants))
@@ -165,13 +167,11 @@ public class ImportService {
 				customers.add(customerOrder);
 			}
 		});
+		LOGGER.info("Imported [{}] de-duplicated Customers", customers.size());
 
 		// add Customer to Sale
 		// done as a second loop to avoid confusing the Customer#equals when looking for duplicates above
-		customers.forEach(customer -> {
-			// add to Sale
-			sale.addCustomer(customer);
-		});
+		customers.forEach(sale::addCustomer);
 
 		// return the updated Sale
 		return salesService.saveSale(sale);
@@ -202,8 +202,8 @@ public class ImportService {
 	private Plant createPlant(final ExcelPlant excelPlant) {
 		LOGGER.trace("Convert imported Plant: [{}]", excelPlant);
 
-		final Float price = StringUtils.isNotBlank(excelPlant.getPrice()) ? Float.valueOf(excelPlant.getPrice().replaceFirst("£", "")) : 0f;
-		final Float cost = StringUtils.isNotBlank(excelPlant.getCost()) ? Float.valueOf(excelPlant.getCost().replaceFirst("£", "")) : 0f;
+		final Double price = StringUtils.isNotBlank(excelPlant.getPrice()) ? Double.valueOf(excelPlant.getPrice().replaceFirst("£", "")) : 0d;
+		final Double cost = StringUtils.isNotBlank(excelPlant.getCost()) ? Double.valueOf(excelPlant.getCost().replaceFirst("£", "")) : 0d;
 
 		return Plant.builder().num(Integer.valueOf(excelPlant.getId())).name(excelPlant.getName()).variety(excelPlant.getVariety())
 				.details(excelPlant.getDetails()).price(price).cost(cost).build();
@@ -315,15 +315,15 @@ public class ImportService {
 		if (address.isGeolocatable()) {
 			address.setCity(StringUtils.defaultIfEmpty(excelOrder.getCity(), importConfiguration.getDefaultCity()));
 
-			// store Address for later re-use
-			if (!importedAddresses.contains(address)) {
+			// store Address (if new) for later re-use
+			if (!IMPORTED_ADDRESS_CACHE.keySet().contains(address)) {
 				// geolocate Address
 				geolocateAddress(address);
 
-				importedAddresses.add(address);
+				IMPORTED_ADDRESS_CACHE.put(address, address);
 			}
 
-			return importedAddresses.stream().filter(address::equals).findFirst().get();
+			return IMPORTED_ADDRESS_CACHE.get(address);
 		}
 
 		// if Address unusable, don't return anything
@@ -334,22 +334,36 @@ public class ImportService {
 		// TODO: do this in a separate GeolocationService?
 
 		if (address.isGeolocatable()) {
-			// TODO: check for existing, geolocate if none
 			final String geolocatableAddress = address.getGeolocatableAddress();
+			LOGGER.debug("Geolocation Address [{}]", geolocatableAddress);
+
 			final Geolocation geolocation = new Geolocation();
 			try {
 				final GeocodingResult[] results = GeocodingApi.geocode(geoApiContext, geolocatableAddress).await();
 
 				if (ArrayUtils.isNotEmpty(results)) {
-					// TODO: some logic as maybe we don't want the first result every time?
-					final GeocodingResult result = results[0];
+					// look for a ROOFTOP match first
+					Optional<GeocodingResult> result = Arrays.stream(results)
+							.filter(r -> r.geometry != null && LocationType.ROOFTOP.equals(r.geometry.locationType)).findFirst();
 
-					geolocation.setFormattedAddress(result.formattedAddress);
-					geolocation.setLatitude(result.geometry.location.lat);
-					geolocation.setLongitude(result.geometry.location.lng);
+					// then look for non-partial matches
+					if (!result.isPresent()) {
+						result = Arrays.stream(results).filter(r -> !r.partialMatch).findFirst();
+					}
+
+					// fall back to the first entry in the result list
+					if (!result.isPresent()) {
+						result = Optional.of(results[0]);
+					}
+
+					final GeocodingResult selectedResult = result.get();
 
 					// set the Geolocation on the Address, assuming something found (otherwise Address not updated)
-					if (StringUtils.isNotEmpty(result.formattedAddress)) {
+					if (StringUtils.isNotEmpty(selectedResult.formattedAddress)) {
+						geolocation.setFormattedAddress(selectedResult.formattedAddress);
+						geolocation.setLatitude(selectedResult.geometry.location.lat);
+						geolocation.setLongitude(selectedResult.geometry.location.lng);
+
 						address.setGeolocation(geolocation);
 					}
 				}
@@ -372,13 +386,13 @@ public class ImportService {
 	}
 
 	private Method findSetter(final Object imported, final Method getter) {
-		Method setter = IMPORTED_METHOD_CACHE.get(getter);
+		Method setter = IMPORT_METHOD_CACHE.get(getter);
 
 		if (setter == null) {
 			final String setterName = getter.getName().replaceFirst("^get", "set");
 			try {
 				setter = imported.getClass().getMethod(setterName, String.class);
-				IMPORTED_METHOD_CACHE.put(getter, setter);
+				IMPORT_METHOD_CACHE.put(getter, setter);
 			} catch (NoSuchMethodException | SecurityException e) {
 				throw new IllegalStateException(String.format("Unable to find setter [%s] for imported object [%s]: %s", setterName,
 						imported.getClass().getSimpleName(), e.getMessage()), e);

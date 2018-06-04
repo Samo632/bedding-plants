@@ -30,7 +30,7 @@ import lombok.ToString;
 @Table(name = "addresses")
 @Data
 @Builder
-@EqualsAndHashCode(exclude = { "customers" })
+@EqualsAndHashCode(exclude = { "customers", "geolocation" })
 @ToString(exclude = { "customers" })
 @NoArgsConstructor
 @AllArgsConstructor

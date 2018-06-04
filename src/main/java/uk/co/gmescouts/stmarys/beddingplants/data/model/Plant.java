@@ -62,10 +62,10 @@ public class Plant {
 	@NonNull
 	@Min(0)
 	@NotNull
-	private Float price;
+	private Double price;
 
 	@NonNull
 	@Min(0)
 	@NotNull
-	private Float cost;
+	private Double cost;
 }

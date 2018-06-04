@@ -38,7 +38,7 @@ public class Sale {
 	@NonNull
 	@Min(0)
 	@NotNull
-	private Float vat;
+	private Double vat;
 
 	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 	@NonNull

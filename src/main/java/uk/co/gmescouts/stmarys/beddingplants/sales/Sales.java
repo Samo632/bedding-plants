@@ -1,5 +1,6 @@
 package uk.co.gmescouts.stmarys.beddingplants.sales;
 
+import java.util.Comparator;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,11 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Order;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Plant;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Sale;
+import uk.co.gmescouts.stmarys.beddingplants.sales.data.model.SaleSummary;
 import uk.co.gmescouts.stmarys.beddingplants.sales.service.SalesService;
 
 @RestController
-public class SalesController {
-	private static final Logger LOGGER = LoggerFactory.getLogger(SalesController.class);
+public class Sales {
+	private static final Logger LOGGER = LoggerFactory.getLogger(Sales.class);
 
 	private final static String SALE_BASE_URL = "/sales";
 
@@ -40,20 +42,22 @@ public class SalesController {
 	 * Deletes
 	 */
 	private final static String DELETE_SALE = SALE_BASE_URL;
+	private final static String DELETE_ORDER = SALE_BASE_URL + "/order";
+	private final static String DELETE_PLANT = SALE_BASE_URL + "/plant";
 
 	@Resource
 	private SalesService salesService;
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE, value = SALE_SUMMARY)
-	public Set<Integer> geSaleSummary() {
+	public Set<SaleSummary> geSaleSummary() {
 		LOGGER.info("Retrieving Sale summaries");
 
-		// TODO: return more summary details (order count, plant count, total cost, total income, profit)
-		final Set<Integer> saleYears = salesService.findAllSales().stream().map(Sale::getYear).sorted().collect(Collectors.toSet());
+		final Set<SaleSummary> saleSummaries = salesService.findAllSales().stream().map(salesService::summariseSale)
+				.sorted(Comparator.comparingInt(SaleSummary::getYear)).collect(Collectors.toSet());
 
-		LOGGER.info("Sale summaries: [{}]", saleYears);
+		LOGGER.info("Number of Sales [{}]", saleSummaries);
 
-		return saleYears;
+		return saleSummaries;
 	}
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE, value = SALE_DETAIL)
@@ -100,8 +104,25 @@ public class SalesController {
 		return deleted;
 	}
 
-	// TODO: Delete Order(s)
-	// TODO: Delete Plant(s)
+	@DeleteMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE, value = DELETE_ORDER)
+	public Boolean deleteOrder(@RequestParam final Integer orderNumber, @RequestParam final Integer year) {
+		LOGGER.info("Deleting Order [{}] from Sale [{}]", orderNumber, year);
 
-	// TODO: Exports (separate ExportService?) - as PDF, as Excel(?)
+		final boolean deleted = salesService.deleteOrder(orderNumber, year);
+
+		LOGGER.debug("Order [{}] from Sale [{}] deleted [{}]", orderNumber, year, deleted);
+
+		return deleted;
+	}
+
+	@DeleteMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE, value = DELETE_PLANT)
+	public Boolean deletePlant(@RequestParam final Integer plantNumber, @RequestParam final Integer year) {
+		LOGGER.info("Deleting Plant [{}] from Sale [{}]", plantNumber, year);
+
+		final boolean deleted = salesService.deletePlant(plantNumber, year);
+
+		LOGGER.debug("Plant [{}] from Sale [{}] deleted [{}]", plantNumber, year, deleted);
+
+		return deleted;
+	}
 }
