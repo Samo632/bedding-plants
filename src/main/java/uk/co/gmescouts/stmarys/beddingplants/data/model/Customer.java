@@ -13,6 +13,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -36,12 +37,18 @@ import lombok.ToString;
 public class Customer {
 	@JsonIgnore
 	@Id
-	public String getName() {
-		return String.format("%s %s-%04d", forename, surname, sale.getYear());
+	public String getId() {
+		return String.format("%s-%04d", this.getName().toUpperCase(), sale.getYear());
 	}
 
-	public void setName(final String name) {
+	public void setId(final String id) {
 		// intentionally blank, for Entity/Jackson construction only
+	}
+
+	@JsonIgnore
+	@Transient
+	public String getName() {
+		return String.format("%s %s", forename, surname);
 	}
 
 	@NonNull

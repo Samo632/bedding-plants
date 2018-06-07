@@ -37,6 +37,16 @@ import lombok.ToString;
 public class Address {
 	@JsonIgnore
 	@Id
+	public String getId() {
+		return this.getGeolocatableAddress().toUpperCase();
+	}
+
+	public void setId(final String id) {
+		// intentionally blank, for Entity/Jackson construction only
+	}
+
+	@JsonIgnore
+	@Transient
 	public String getGeolocatableAddress() {
 		final StringBuilder geo = new StringBuilder(200);
 
@@ -75,11 +85,7 @@ public class Address {
 			geo.append(postcode);
 		}
 
-		return geo.toString().toUpperCase();
-	}
-
-	public void setGeolocatableAddress(final String geolocatableAddress) {
-		// intentionally blank, for Entity/Jackson construction only
+		return geo.toString();
 	}
 
 	@JsonIgnore

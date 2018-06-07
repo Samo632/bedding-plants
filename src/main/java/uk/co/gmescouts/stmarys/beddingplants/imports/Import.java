@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,27 +22,26 @@ import uk.co.gmescouts.stmarys.beddingplants.sales.data.model.SaleSummary;
 import uk.co.gmescouts.stmarys.beddingplants.sales.service.SalesService;
 
 @RestController
+@RequestMapping(value = "/import")
 public class Import {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Import.class);
-
-	private final static String IMPORT_BASE_URL = "/import";
 
 	/*
 	 * Sales
 	 */
-	private final static String IMPORT_SALE = IMPORT_BASE_URL + "/sale";
+	private final static String IMPORT_SALE = "/sale";
 	private final static String IMPORT_SALE_EXCEL = IMPORT_SALE + "/excel";
 
 	/*
 	 * Customers
 	 */
-	private final static String IMPORT_CUSTOMERS = IMPORT_BASE_URL + "/customers";
+	private final static String IMPORT_CUSTOMERS = "/customers";
 	private final static String IMPORT_CUSTOMERS_EXCEL = IMPORT_CUSTOMERS + "/excel";
 
 	/*
 	 * Plants
 	 */
-	private final static String IMPORT_PLANTS = IMPORT_BASE_URL + "/plants";
+	private final static String IMPORT_PLANTS = "/plants";
 	private final static String IMPORT_PLANTS_EXCEL = IMPORT_PLANTS + "/excel";
 
 	private final static Integer CURRENT_YEAR = Calendar.getInstance().get(Calendar.YEAR);

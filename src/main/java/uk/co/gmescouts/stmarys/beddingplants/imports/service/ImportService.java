@@ -158,7 +158,8 @@ public class ImportService {
 		customerOrders.forEach(customerOrder -> {
 			// is Customer already present?
 			if (customers.contains(customerOrder)) {
-				final Customer existingCustomer = customers.stream().filter(customerOrder::equals).findFirst().get();
+				final Customer existingCustomer = customers.stream().filter(customerOrder::equals).findFirst()
+						.orElseThrow(IllegalStateException::new);
 
 				// add new Order(s) to existing Customer
 				customerOrder.getOrders().forEach(existingCustomer::addOrder);
@@ -317,8 +318,8 @@ public class ImportService {
 
 			// store Address (if new) for later re-use
 			if (!IMPORTED_ADDRESS_CACHE.keySet().contains(address)) {
-				// geolocate Address
-				geolocateAddress(address);
+				// TODO: geolocate Address
+				// geolocateAddress(address);
 
 				IMPORTED_ADDRESS_CACHE.put(address, address);
 			}

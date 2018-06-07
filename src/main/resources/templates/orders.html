@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head lang="en">
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+		<link href="http://cdn.jsdelivr.net/webjars/bootstrap/4.1.0/css/bootstrap.min.css"
+			th:href="@{/webjars/bootstrap/4.1.0/css/bootstrap.min.css}" rel="stylesheet" media="screen" />
+
+		<link href="../static/css/beddingplants.css" th:href="@{/css/beddingplants.css}" rel="stylesheet" media="screen" />
+
+		<script src="http://cdn.jsdelivr.net/webjars/jquery/3.3.1/jquery.min.js"
+			th:src="@{/webjars/jquery/3.3.1/jquery.min.js}"></script>
+
+		<script src="../static/js/beddingplants.js" th:src="@{/js/beddingplants.js}"></script>
+
+		<title th:text="${appName}">Bedding Plants</title>
+	</head>
+	<body>
+		<h1 th:text="${saleYear}">Year</h1>
+		<p>
+			<img src="../static/images/logo.jpg" th:src="@{/images/logo.jpg}" alt="Scouts" />
+			Order count: <span th:text="${#lists.size(orders)}">[Order Count]</span>
+			Plant count: <span th:text="${#lists.size(plants)}">[Plant Count]</span>
+		</p>
+	</body>
+</html>

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,29 +22,28 @@ import uk.co.gmescouts.stmarys.beddingplants.sales.data.model.SaleSummary;
 import uk.co.gmescouts.stmarys.beddingplants.sales.service.SalesService;
 
 @RestController
+@RequestMapping(value = "/sale")
 public class Sales {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Sales.class);
-
-	private final static String SALE_BASE_URL = "/sales";
 
 	/*
 	 * Summaries
 	 */
-	private final static String SALE_SUMMARY = SALE_BASE_URL + "/summary";
+	private final static String SALE_SUMMARY = "/summary";
 
 	/*
 	 * Details
 	 */
-	private final static String SALE_DETAIL = SALE_BASE_URL + "/detail";
-	private final static String SALE_DETAIL_ORDER = SALE_SUMMARY + "/order";
-	private final static String SALE_DETAIL_PLANT = SALE_SUMMARY + "/plant";
+	private final static String SALE_DETAIL = "/detail";
+	private final static String SALE_DETAIL_ORDER = SALE_DETAIL + "/order";
+	private final static String SALE_DETAIL_PLANT = SALE_DETAIL + "/plant";
 
 	/*
 	 * Deletes
 	 */
-	private final static String DELETE_SALE = SALE_BASE_URL;
-	private final static String DELETE_ORDER = SALE_BASE_URL + "/order";
-	private final static String DELETE_PLANT = SALE_BASE_URL + "/plant";
+	private final static String DELETE_SALE = "/";
+	private final static String DELETE_ORDER = "/order";
+	private final static String DELETE_PLANT = "/plant";
 
 	@Resource
 	private SalesService salesService;
