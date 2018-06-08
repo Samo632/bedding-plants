@@ -9,7 +9,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>bedding-plants</name>
+	<name>250th Manchester (St. Mary's) Scout Group - Bedding Plants</name>
 	<description>Bedding Plants order reader, geolocator and mapper</description>
 
 	<parent>
@@ -19,14 +19,44 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
+	<scm>
+		<url>https://github.com/Samo632/bedding-plants</url>
+		<connection>git@github.com:Samo632/bedding-plants.git</connection>
+	</scm>
+
+	<profiles>
+		<profile>
+			<id>dev</id>
+			<properties>
+				<activatedProfiles>dev</activatedProfiles>
+			</properties>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+		</profile>
+		<profile>
+			<id>release</id>
+			<properties>
+				<activatedProfiles>release</activatedProfiles>
+			</properties>
+		</profile>
+	</profiles>
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
+
+		<bootstrap.version>4.1.0</bootstrap.version>
+		<jquery.version>3.3.1</jquery.version>
 	</properties>
 
 	<dependencies>
 		<!-- Spring Boot -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-logging</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -110,12 +140,12 @@
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>bootstrap</artifactId>
-			<version>4.1.0</version>
+			<version>${bootstrap.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>jquery</artifactId>
-			<version>3.3.1</version>
+			<version>${jquery.version}</version>
 		</dependency>
 
 		<!-- Swagger -->
@@ -153,11 +183,6 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-configuration-processor</artifactId>
-			<optional>true</optional>
-		</dependency>
 	</dependencies>
 
 	<build>
@@ -171,6 +196,21 @@
 				<artifactId>versions-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>application*.properties</include>
+				</includes>
+				<filtering>true</filtering>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<excludes>
+					<exclude>application*.properties</exclude>
+				</excludes>
+			</resource>
+		</resources>
 	</build>
 
 	<repositories>
@@ -205,9 +245,4 @@
 			<url>https://jcenter.bintray.com/</url>
 		</repository>
 	</repositories>
-
-	<scm>
-		<url>https://github.com/Samo632/bedding-plants</url>
-		<connection>git@github.com:Samo632/bedding-plants.git</connection>
-	</scm>
 </project>

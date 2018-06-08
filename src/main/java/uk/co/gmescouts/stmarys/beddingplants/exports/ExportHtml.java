@@ -34,7 +34,6 @@ public class ExportHtml {
 	@Resource
 	private ExportService exportService;
 
-	// @RequestMapping(EXPORT_CUSTOMER_ORDERS_HTML)
 	@GetMapping(EXPORT_CUSTOMER_ORDERS_HTML)
 	public String exportSaleCustomerOrdersAsHtml(final Model model, @RequestParam final Integer saleYear) {
 		LOGGER.info("Exporting Order details for Sale [{}]", saleYear);
