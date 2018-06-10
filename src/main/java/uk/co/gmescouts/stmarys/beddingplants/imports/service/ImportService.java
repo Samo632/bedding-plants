@@ -170,6 +170,7 @@ public class ImportService {
 		});
 		LOGGER.info("Imported [{}] de-duplicated Customers", customers.size());
 
+		// TODO is the "JPA way" to save the Customers (and the Plants) separately and then "refresh" the Sale instead?
 		// add Customer to Sale
 		// done as a second loop to avoid confusing the Customer#equals when looking for duplicates above
 		customers.forEach(sale::addCustomer);

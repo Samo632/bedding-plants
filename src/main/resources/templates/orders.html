@@ -23,8 +23,8 @@
 	<body>
 		<div th:each="order,orderStat : ${orders}" th:class="${orderStat.index &gt; 0} ? 'order break' : 'order'">
 			<div class="header">
-				<img src="../static/images/logo.jpg" th:src="@{/images/logo.jpg}" alt="Scouts"/>
 				<h1>
+					<img src="../static/images/logo.jpg" th:src="@{/images/logo.jpg}" alt="Scouts"/>
 					<span th:text="${saleYear}">[Sale Year]</span> Bedding Plant Order Form <span th:text="${order.num}">[Order Number]</span>
 				</h1>
 			</div>
