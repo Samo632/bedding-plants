@@ -142,17 +142,27 @@ public class SalesService {
 		return CustomerSummary.builder().orderCount(orderCount).ordersCostTotal(ordersCostTotal).ordersIncomeTotal(ordersIncomeTotal).build();
 	}
 
+	public Double orderPrice(@NotNull final Order order) {
+		return Math.round(calculateOrderIncomeTotal(order) * 100.0) / 100.0;
+	}
+
 	private static Double calculateOrdersCostTotal(@NotNull final Set<Order> orders) {
 		return orders.stream().flatMapToDouble(order -> order.getOrderItems().stream().mapToDouble(SalesService::calculateOrderItemCost)).sum();
 	}
 
 	private static Double calculateOrderItemCost(@NotNull final OrderItem orderItem) {
 		// (plant cost exc. VAT + VAT) * number of plants ordered
-		return (orderItem.getPlant().getCost() * (1f + (orderItem.getPlant().getSale().getVat() / 100f))) * orderItem.getCount();
+		final Double vatMultiplier = 1d + (orderItem.getPlant().getSale().getVat() / 100d);
+
+		return (orderItem.getPlant().getCost() * vatMultiplier) * orderItem.getCount();
 	}
 
 	private static Double calculateOrdersIncomeTotal(@NotNull final Set<Order> orders) {
-		return orders.stream().flatMapToDouble(order -> order.getOrderItems().stream().mapToDouble(SalesService::calculateOrderItemIncome)).sum();
+		return orders.stream().mapToDouble(SalesService::calculateOrderIncomeTotal).sum();
+	}
+
+	private static Double calculateOrderIncomeTotal(@NotNull final Order order) {
+		return order.getOrderItems().stream().mapToDouble(SalesService::calculateOrderItemIncome).sum();
 	}
 
 	private static Double calculateOrderItemIncome(@NotNull final OrderItem orderItem) {

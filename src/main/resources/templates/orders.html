@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 	<head lang="en">
+		<!-- Required meta tags -->
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	    <meta charset="utf-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
 		<link href="http://cdn.jsdelivr.net/webjars/bootstrap/4.1.0/css/bootstrap.min.css"
-			th:href="@{/webjars/bootstrap/4.1.0/css/bootstrap.min.css}" rel="stylesheet" media="screen" />
+			th:href="@{/webjars/bootstrap/4.1.0/css/bootstrap.min.css}" rel="stylesheet" />
 
-		<link href="../static/css/beddingplants.css" th:href="@{/css/beddingplants.css}" rel="stylesheet" media="screen" />
+		<link href="../static/css/beddingplants.css" th:href="@{/css/beddingplants.css}" rel="stylesheet" />
 
 		<script src="http://cdn.jsdelivr.net/webjars/jquery/3.3.1/jquery.min.js"
 			th:src="@{/webjars/jquery/3.3.1/jquery.min.js}"></script>
@@ -18,11 +21,51 @@
 		<title th:text="${appName}">Bedding Plants</title>
 	</head>
 	<body>
-		<h1 th:text="${saleYear}">Year</h1>
-		<p>
-			<img src="../static/images/logo.jpg" th:src="@{/images/logo.jpg}" alt="Scouts" />
-			Order count: <span th:text="${#lists.size(orders)}">[Order Count]</span>
-			Plant count: <span th:text="${#lists.size(plants)}">[Plant Count]</span>
-		</p>
+		<div th:each="order,orderStat : ${orders}" th:class="${orderStat.index &gt; 0} ? 'order break' : 'order'">
+			<div class="header">
+				<img src="../static/images/logo.jpg" th:src="@{/images/logo.jpg}" alt="Scouts"/>
+				<h1>
+					<span th:text="${saleYear}">[Sale Year]</span> Bedding Plant Order Form <span th:text="${order.num}">[Order Number]</span>
+				</h1>
+			</div>
+			<table class="customer">
+				<tr>
+					<td class="label">Name</td><td th:text="${order.customer.name}" class="detail">[Name]</td>
+					<td class="label">C/O</td><td th:text="${order.courtesyOfName}" class="detail">[C/O]</td>
+				</tr>
+				<tr>
+					<td class="label">Address</td><td colspan="3" th:text="${order.customer.address.geolocatableAddress}" class="detail">[Address]</td>
+				</tr>
+				<tr>
+					<td class="label">Telephone</td><td th:text="${order.customer.telephone}" class="detail">[Telephone]</td>
+					<td class="label">Email</td><td th:text="${order.customer.emailAddress}" class="detail">[Email]</td>
+				</tr>
+				<tr>
+					<td class="label">Collect/Deliver</td><td th:text="${order.orderType}" class="detail">[Collect/Deliver]</td>
+					<td class="label">Delivery Day</td><td th:text="${order.deliveryDay}" class="detail">[Deilvery Day]</td>
+				</tr>
+				<tr>
+					<td class="label">Total Price</td><td th:text="${#numbers.formatCurrency(@salesService.orderPrice(order))}" class="detail price">£ [Total Price]</td>
+					<td class="label">Already Paid</td><td th:text="${#numbers.formatCurrency(order.paid)}" class="detail">£ [Already Paid]</td>
+				</tr>
+			</table>
+			<table class="plants">
+				<thead>
+					<tr><th>#</th><th>Name</th><th>Amount</th></tr>
+				</thead>
+				<tbody>
+					<th:block th:each="plant : ${plants}" th:with="amount=${@exportService.orderPlantAmount(order, plant)}">
+					<tr th:class="${amount != null ? 'ordered' : ''}">
+						<td th:text="${plant.num}">[Num]</td>
+						<td th:text="${plant.name}">[Name]</td>
+						<td th:text="${amount}" class="amount">£ [Amount]</td>
+					</tr>
+					</th:block>
+				</tbody>
+				<tfoot>
+					<tr><td colspan="2" class="total">Total</td><td th:text="${@exportService.orderPlantCount(order)}">£ [Total]</td></tr>
+				</tfoot>
+			</table>
+		</div>
 	</body>
 </html>

@@ -1,5 +1,7 @@
 package uk.co.gmescouts.stmarys.beddingplants.exports;
 
+import java.io.IOException;
+
 import javax.annotation.Resource;
 
 import org.slf4j.Logger;
@@ -9,10 +11,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import uk.co.gmescouts.stmarys.beddingplants.data.model.OrderType;
 import uk.co.gmescouts.stmarys.beddingplants.exports.service.ExportService;
 
 @RestController
@@ -23,19 +27,19 @@ public class ExportPdf {
 	/*
 	 * Orders
 	 */
-	private final static String EXPORT_CUSTOMER_ORDERS = "/orders";
+	private final static String EXPORT_CUSTOMER_ORDERS = "/orders/{saleYear}";
 	private final static String EXPORT_CUSTOMER_ORDERS_PDF = EXPORT_CUSTOMER_ORDERS + "/pdf";
 
 	@Resource
 	private ExportService exportService;
 
 	@GetMapping(produces = MediaType.APPLICATION_PDF_VALUE, value = EXPORT_CUSTOMER_ORDERS_PDF)
-	public ResponseEntity<ByteArrayResource> exportSaleCustomerOrdersAsPdf(@RequestParam final Integer saleYear) {
-		LOGGER.info("Exporting Order details for Sale [{}]", saleYear);
+	public ResponseEntity<ByteArrayResource> exportSaleCustomerOrdersAsPdf(@PathVariable final Integer saleYear,
+			@RequestParam(required = false) final OrderType orderType) throws IOException {
+		LOGGER.info("Exporting (PDF) Order details for Sale [{}] with Order Type [{}]", saleYear, orderType);
 
-		// do the export
-		// TODO: call the HTML export endpoint and use pdfHTML
-		final byte[] pdf = exportService.exportSaleCustomersToPdf(saleYear);
+		// get the PDF content
+		final byte[] pdf = exportService.exportSaleCustomersToPdf(saleYear, orderType);
 
 		final HttpHeaders headers = new HttpHeaders();
 		headers.add(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");

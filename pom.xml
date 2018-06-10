@@ -122,6 +122,11 @@
 			<version>7.1.2</version>
 			<type>pom</type>
 		</dependency>
+		<dependency>
+			<groupId>com.itextpdf</groupId>
+			<artifactId>html2pdf</artifactId>
+			<version>2.0.2</version>
+		</dependency>
 
 		<!-- Google Maps -->
 		<dependency>
