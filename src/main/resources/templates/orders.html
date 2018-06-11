@@ -9,15 +9,10 @@
 		<link href="http://cdn.jsdelivr.net/webjars/bootstrap/4.1.0/css/bootstrap.min.css"
 			th:href="@{/webjars/bootstrap/4.1.0/css/bootstrap.min.css}" rel="stylesheet" />
 
-		<link href="../static/css/beddingplants.css" th:href="@{/css/beddingplants.css}" rel="stylesheet" />
-
-		<script src="http://cdn.jsdelivr.net/webjars/jquery/3.3.1/jquery.min.js"
-			th:src="@{/webjars/jquery/3.3.1/jquery.min.js}"></script>
-
-		<script src="../static/js/beddingplants.js" th:src="@{/js/beddingplants.js}"></script>
+		<link href="../static/css/orders.css" th:href="@{/css/orders.css}" rel="stylesheet" />
 
 		<link rel="icon" type="image/jpg" href="../static/images/logo.jpg" th:href="@{/images/logo.jpg}" />
-		
+
 		<title th:text="${appName}">Bedding Plants</title>
 	</head>
 	<body>
@@ -41,7 +36,7 @@
 					<td class="label">Email</td><td th:text="${order.customer.emailAddress}" class="detail">[Email]</td>
 				</tr>
 				<tr>
-					<td class="label">Collect/Deliver</td><td th:text="${order.orderType}" class="detail">[Collect/Deliver]</td>
+					<td class="label">Collect/Deliver</td><td th:text="${order.type}" class="detail">[Collect/Deliver]</td>
 					<td class="label">Delivery Day</td><td th:text="${order.deliveryDay}" class="detail">[Deilvery Day]</td>
 				</tr>
 				<tr>

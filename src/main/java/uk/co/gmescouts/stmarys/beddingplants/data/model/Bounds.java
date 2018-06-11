@@ -5,18 +5,22 @@ import javax.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 @Embeddable
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Geolocation {
-	private String formattedAddress;
+public class Bounds {
+	@NonNull
+	private Double north;
 
-	private Double latitude;
+	@NonNull
+	private Double east;
 
-	private Double longitude;
+	@NonNull
+	private Double south;
 
-	// TODO: needed anywhere?
-	// private Bounds bounds;
+	@NonNull
+	private Double west;
 }

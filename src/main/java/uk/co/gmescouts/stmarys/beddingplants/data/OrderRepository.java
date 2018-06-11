@@ -17,7 +17,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 	Set<Order> findByDeliveryDayAndCustomerSaleYear(DeliveryDay deliveryDay, Integer customerSaleYear);
 
 	@OrderBy("num")
-	Set<Order> findByOrderTypeAndCustomerSaleYear(OrderType orderType, Integer customerSaleYear);
+	Set<Order> findByTypeAndCustomerSaleYear(OrderType type, Integer customerSaleYear);
 
 	@OrderBy("num")
 	Set<Order> findByCustomerSaleYear(Integer customerSaleYear);

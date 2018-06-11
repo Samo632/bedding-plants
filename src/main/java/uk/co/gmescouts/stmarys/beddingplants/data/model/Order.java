@@ -66,7 +66,7 @@ public class Order {
 	@NonNull
 	@NotNull
 	@Enumerated(EnumType.STRING)
-	private OrderType orderType;
+	private OrderType type;
 
 	private String courtesyOfName;
 

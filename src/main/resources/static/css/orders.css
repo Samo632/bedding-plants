@@ -1,10 +1,20 @@
 /*
+* Printing
+*/
+@media print {
+	@page {
+		size: portrait;
+	}
+}
+
+/*
 * Order Page
 */
 div.order {
 	text-align: centre;
 	width: 100%;
 }
+
 .break {
 	page-break-before: always;
 }
@@ -16,7 +26,7 @@ table {
 }
 
 table td, table th {
-	padding: 1px 5px;	
+	padding: 1px 5px;
 }
 
 /*
@@ -27,16 +37,19 @@ div.header {
 	vertical-align: middle;
 	margin-bottom: 10pt;
 }
+
 img {
 	vertical-align: middle;
 	height: 40px;
 	display: inline;
 }
+
 h1 {
 	font-size: 20pt;
 	vertical-align: middle;
 	display: inline;
 }
+
 h1 span {
 	color: gray;
 	font-size: 20pt;
@@ -51,16 +64,20 @@ table.customer {
 	font-size: 11pt;
 	margin-bottom: 10pt;
 }
+
 table.customer td.detail, table.customer td.price {
 	border-color: lightgray;
 	border-style: solid;
 }
+
 table.customer td.label {
 	color: gray;
 }
+
 table.customer td.detail {
 	border-width: thin;
 }
+
 table.customer td.price {
 	border-width: medium;
 	font-weight: bold;
@@ -72,28 +89,35 @@ table.customer td.price {
 table.plants td, table.plants th {
 	font-size: 14pt;
 }
+
 table.plants td {
 	color: lightgray;
 }
+
 table.plants th {
 	color: black;
 }
+
 table.plants td, table.plants th {
 	border-color: lightgray;
 	border-width: thin;
 	border-style: solid;
 }
+
 table.plants tr.ordered td {
 	color: black;
 }
+
 table.plants tr.ordered td.amount {
 	color: black;
 	font-weight: bold;
 }
+
 table.plants tfoot tr td {
 	color: black;
 	font-weight: bold;
 }
+
 table.plants td.total {
 	text-align: right;
 }

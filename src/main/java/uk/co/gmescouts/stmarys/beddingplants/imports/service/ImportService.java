@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,7 +17,6 @@ import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -30,11 +28,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.google.maps.GeoApiContext;
-import com.google.maps.GeocodingApi;
-import com.google.maps.errors.ApiException;
-import com.google.maps.model.GeocodingResult;
-import com.google.maps.model.LocationType;
 import com.poiji.bind.Poiji;
 import com.poiji.exception.PoijiExcelType;
 import com.poiji.option.PoijiOptions.PoijiOptionsBuilder;
@@ -42,7 +35,6 @@ import com.poiji.option.PoijiOptions.PoijiOptionsBuilder;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Address;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Customer;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.DeliveryDay;
-import uk.co.gmescouts.stmarys.beddingplants.data.model.Geolocation;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Order;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.OrderItem;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.OrderType;
@@ -60,9 +52,6 @@ public class ImportService {
 
 	@Resource
 	private ImportConfiguration importConfiguration;
-
-	@Resource
-	private GeoApiContext geoApiContext;
 
 	@Resource
 	private SalesService salesService;
@@ -239,7 +228,7 @@ public class ImportService {
 
 		// create Order (without Customer or OrderItems)
 		final Order order = Order.builder().num(Integer.valueOf(excelOrder.getOrderNumber())).deliveryDay(deliveryDay)
-				.orderType(OrderType.valueOf(excelOrder.getCollectDeliver().toUpperCase().charAt(0))).build();
+				.type(OrderType.valueOf(excelOrder.getCollectDeliver().toUpperCase().charAt(0))).build();
 
 		// determine requested number of each plant and create OrderItems on the Order
 		for (final Plant plant : plants) {
@@ -319,9 +308,6 @@ public class ImportService {
 
 			// store Address (if new) for later re-use
 			if (!IMPORTED_ADDRESS_CACHE.keySet().contains(address)) {
-				// TODO: geolocate Address
-				// geolocateAddress(address);
-
 				IMPORTED_ADDRESS_CACHE.put(address, address);
 			}
 
@@ -330,49 +316,6 @@ public class ImportService {
 
 		// if Address unusable, don't return anything
 		return null;
-	}
-
-	private void geolocateAddress(@NotNull final Address address) {
-		// TODO: do this in a separate GeolocationService?
-
-		if (address.isGeolocatable()) {
-			final String geolocatableAddress = address.getGeolocatableAddress();
-			LOGGER.debug("Geolocation Address [{}]", geolocatableAddress);
-
-			final Geolocation geolocation = new Geolocation();
-			try {
-				final GeocodingResult[] results = GeocodingApi.geocode(geoApiContext, geolocatableAddress).await();
-
-				if (ArrayUtils.isNotEmpty(results)) {
-					// look for a ROOFTOP match first
-					Optional<GeocodingResult> result = Arrays.stream(results)
-							.filter(r -> r.geometry != null && LocationType.ROOFTOP.equals(r.geometry.locationType)).findFirst();
-
-					// then look for non-partial matches
-					if (!result.isPresent()) {
-						result = Arrays.stream(results).filter(r -> !r.partialMatch).findFirst();
-					}
-
-					// fall back to the first entry in the result list
-					if (!result.isPresent()) {
-						result = Optional.of(results[0]);
-					}
-
-					final GeocodingResult selectedResult = result.get();
-
-					// set the Geolocation on the Address, assuming something found (otherwise Address not updated)
-					if (StringUtils.isNotEmpty(selectedResult.formattedAddress)) {
-						geolocation.setFormattedAddress(selectedResult.formattedAddress);
-						geolocation.setLatitude(selectedResult.geometry.location.lat);
-						geolocation.setLongitude(selectedResult.geometry.location.lng);
-
-						address.setGeolocation(geolocation);
-					}
-				}
-			} catch (IllegalStateException | ApiException | InterruptedException | IOException e) {
-				LOGGER.warn(String.format("Unable to geocode address [%s]: %s", geolocatableAddress, e.getMessage()), e);
-			}
-		}
 	}
 
 	private String normaliseField(final String field) {

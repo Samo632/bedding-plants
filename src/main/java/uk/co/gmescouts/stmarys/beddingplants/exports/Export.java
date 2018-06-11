@@ -1,6 +1,7 @@
 package uk.co.gmescouts.stmarys.beddingplants.exports;
 
 import java.io.IOException;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -16,19 +17,25 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import uk.co.gmescouts.stmarys.beddingplants.data.model.Address;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.OrderType;
 import uk.co.gmescouts.stmarys.beddingplants.exports.service.ExportService;
 
 @RestController
 @RequestMapping(value = "/export")
-public class ExportPdf {
-	private static final Logger LOGGER = LoggerFactory.getLogger(ExportPdf.class);
+public class Export {
+	private static final Logger LOGGER = LoggerFactory.getLogger(Export.class);
 
 	/*
 	 * Orders
 	 */
 	private final static String EXPORT_CUSTOMER_ORDERS = "/orders/{saleYear}";
 	private final static String EXPORT_CUSTOMER_ORDERS_PDF = EXPORT_CUSTOMER_ORDERS + "/pdf";
+
+	/*
+	 * Addresses
+	 */
+	private final static String EXPORT_CUSTOMER_ADDRESSES = "/addresses/{saleYear}";
 
 	@Resource
 	private ExportService exportService;
@@ -52,5 +59,15 @@ public class ExportPdf {
 		}
 		return ResponseEntity.ok().headers(headers).contentLength(pdf.length).contentType(MediaType.APPLICATION_OCTET_STREAM)
 				.body(new ByteArrayResource(pdf));
+	}
+
+	@GetMapping(EXPORT_CUSTOMER_ADDRESSES)
+	public Set<Address> exportSaleAddressesAsJson(@PathVariable final Integer saleYear, @RequestParam(required = false) final OrderType orderType) {
+		LOGGER.info("Exporting (JSON); Addresses for Sale [{}] with Order Type [{}]", saleYear, orderType);
+
+		// get the Addresses
+		final Set<Address> addresses = exportService.getSaleAddresses(saleYear, orderType);
+
+		return addresses;
 	}
 }
