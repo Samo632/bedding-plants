@@ -1,7 +1,5 @@
 package uk.co.gmescouts.stmarys.beddingplants.exports;
 
-import java.io.IOException;
-import java.util.Base64;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -15,33 +13,39 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.google.maps.errors.ApiException;
-
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Order;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.OrderType;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Plant;
+import uk.co.gmescouts.stmarys.beddingplants.exports.configuration.ExportConfiguration;
 import uk.co.gmescouts.stmarys.beddingplants.exports.service.ExportService;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.configuration.GeolocationConfiguration;
 
 @Controller
 public class ExportHtml {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ExportHtml.class);
 
-	private final static String EXPORT_BASE = "/export";
+	private static final String EXPORT_BASE = "/export";
 
 	/*
 	 * Orders
 	 */
-	private final static String EXPORT_CUSTOMER_ORDERS = EXPORT_BASE + "/orders/{saleYear}";
-	public final static String EXPORT_CUSTOMER_ORDERS_HTML = EXPORT_CUSTOMER_ORDERS + "/html";
+	private static final String EXPORT_CUSTOMER_ORDERS = EXPORT_BASE + "/orders/{saleYear}";
+	public static final String EXPORT_CUSTOMER_ORDERS_HTML = EXPORT_CUSTOMER_ORDERS + "/html";
 
 	/*
 	 * Addresses
 	 */
-	private final static String EXPORT_CUSTOMER_ADDRESSES = EXPORT_BASE + "/addresses/{saleYear}";
-	private final static String EXPORT_CUSTOMER_ADDRESSES_HTML = EXPORT_CUSTOMER_ADDRESSES + "/html";
+	private static final String EXPORT_CUSTOMER_ADDRESSES = EXPORT_BASE + "/addresses/{saleYear}";
+	private static final String EXPORT_CUSTOMER_ADDRESSES_HTML = EXPORT_CUSTOMER_ADDRESSES + "/html";
 
 	@Value("${spring.application.name}")
 	private String appName;
+
+	@Resource
+	private GeolocationConfiguration geolocationConfiguration;
+
+	@Resource
+	private ExportConfiguration exportConfiguration;
 
 	@Resource
 	private ExportService exportService;
@@ -69,17 +73,27 @@ public class ExportHtml {
 
 	@GetMapping(EXPORT_CUSTOMER_ADDRESSES_HTML)
 	public String exportSaleAddressesAsMap(final Model model, @PathVariable final Integer saleYear,
-			@RequestParam(required = false) final OrderType orderType) throws ApiException, InterruptedException, IOException {
+			@RequestParam(required = false) final OrderType orderType) {
 		LOGGER.info("Exporting (HTML); Addresses for Sale [{}] with Order Type [{}]", saleYear, orderType);
 
-		// get the image
-		final byte[] mapImg = exportService.exportSaleAddressesToGoogleMap(saleYear, orderType);
-
-		// add data attributes to template Model
 		addCommonModelAttributes(model);
-		if (mapImg != null) {
-			model.addAttribute("mapImg", Base64.getEncoder().encodeToString(mapImg));
-		}
+
+		// Google API key to call map service
+		model.addAttribute("googleApiKey", geolocationConfiguration.getGoogleApiKey());
+
+		// geolocated Addresses to be plotted on the Map
+		model.addAttribute("geolocatedAddresses", exportService.getSaleAddresses(saleYear, orderType, true));
+
+		// Scout Hut location (default Map centre)
+		model.addAttribute("scoutHutLat", exportConfiguration.getScoutHutLat());
+		model.addAttribute("scoutHutLng", exportConfiguration.getScoutHutLng());
+
+		// default Map viewport settings (boundaries and zoom level)
+		model.addAttribute("defaultZoom", exportConfiguration.getDefaultZoom());
+		model.addAttribute("viewportMaxLat", exportConfiguration.getViewportMaxLat());
+		model.addAttribute("viewportMinLat", exportConfiguration.getViewportMinLat());
+		model.addAttribute("viewportMaxLng", exportConfiguration.getViewportMaxLng());
+		model.addAttribute("viewportMinLng", exportConfiguration.getViewportMinLng());
 
 		return "addresses";
 	}

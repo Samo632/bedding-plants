@@ -16,6 +16,22 @@ public class GeolocationConfiguration {
 	@Setter
 	private String googleApiKey;
 
+	@Getter
+	@Setter
+	private int googleMapsImgScale;
+
+	@Getter
+	@Setter
+	private int googleMapsImgWidth;
+
+	@Getter
+	@Setter
+	private int googleMapsImgHeight;
+
+	@Getter
+	@Setter
+	private String googleMapsImgLanguage;
+
 	@Bean
 	public GeoApiContext getGeoApiContext() {
 		return new GeoApiContext.Builder().apiKey(googleApiKey).build();

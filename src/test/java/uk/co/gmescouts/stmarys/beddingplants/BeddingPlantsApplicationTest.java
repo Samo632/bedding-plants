@@ -18,7 +18,7 @@ import uk.co.gmescouts.stmarys.beddingplants.imports.configuration.ImportConfigu
 @AutoConfigureWebClient
 @ContextConfiguration(classes = { WebMvcConfigure.class, BeddingPlantsConfiguration.class, ImportConfiguration.class, GeolocationConfiguration.class,
 		ExportConfiguration.class })
-public class BeddingPlantsApplicationTests {
+public class BeddingPlantsApplicationTest {
 	@Test
 	public void contextLoads() {
 		// intentionally blank

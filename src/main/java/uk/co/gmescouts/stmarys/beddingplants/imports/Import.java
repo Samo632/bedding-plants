@@ -5,7 +5,6 @@ import java.util.Calendar;
 
 import javax.annotation.Resource;
 
-import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,28 +25,29 @@ import uk.co.gmescouts.stmarys.beddingplants.sales.service.SalesService;
 public class Import {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Import.class);
 
+	private static final String IMPORT_TYPE_EXCEL = "/excel";
 	/*
 	 * Sales
 	 */
-	private final static String IMPORT_SALE = "/sale";
-	private final static String IMPORT_SALE_EXCEL = IMPORT_SALE + "/excel";
+	private static final String IMPORT_SALE = "/sale";
+	private static final String IMPORT_SALE_EXCEL = IMPORT_SALE + IMPORT_TYPE_EXCEL;
 
 	/*
 	 * Customers
 	 */
-	private final static String IMPORT_CUSTOMERS = "/customers";
-	private final static String IMPORT_CUSTOMERS_EXCEL = IMPORT_CUSTOMERS + "/excel";
+	private static final String IMPORT_CUSTOMERS = "/customers";
+	private static final String IMPORT_CUSTOMERS_EXCEL = IMPORT_CUSTOMERS + IMPORT_TYPE_EXCEL;
 
 	/*
 	 * Plants
 	 */
-	private final static String IMPORT_PLANTS = "/plants";
-	private final static String IMPORT_PLANTS_EXCEL = IMPORT_PLANTS + "/excel";
+	private static final String IMPORT_PLANTS = "/plants";
+	private static final String IMPORT_PLANTS_EXCEL = IMPORT_PLANTS + IMPORT_TYPE_EXCEL;
 
-	private final static Integer CURRENT_YEAR = Calendar.getInstance().get(Calendar.YEAR);
+	private static final Integer CURRENT_YEAR = Calendar.getInstance().get(Calendar.YEAR);
 
-	private final static String MEDIA_TYPE_XLS = "application/vnd.ms-excel";
-	private final static String MEDIA_TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+	private static final String MEDIA_TYPE_XLS = "application/vnd.ms-excel";
+	private static final String MEDIA_TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
 	@Resource
 	private ImportService importService;
@@ -59,8 +59,7 @@ public class Import {
 			MediaType.MULTIPART_FORM_DATA_VALUE }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE, value = IMPORT_SALE_EXCEL)
 	public SaleSummary importSaleFromExcel(@RequestParam final MultipartFile file, @RequestParam(defaultValue = "20.0") final double vat,
 			@RequestParam(required = false) final Integer year, @RequestParam(required = false) final String orderImportsSheetName,
-			@RequestParam(required = false) final String plantImportsSheetName)
-			throws EncryptedDocumentException, InvalidFormatException, IOException {
+			@RequestParam(required = false) final String plantImportsSheetName) throws InvalidFormatException, IOException {
 
 		Integer saleYear;
 		if (year == null) {
@@ -90,8 +89,7 @@ public class Import {
 	@PostMapping(consumes = { MEDIA_TYPE_XLS, MEDIA_TYPE_XLSX,
 			MediaType.MULTIPART_FORM_DATA_VALUE }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE, value = IMPORT_CUSTOMERS_EXCEL)
 	public SaleSummary importCustomersFromExcel(@RequestParam final MultipartFile file, @RequestParam final Integer saleYear,
-			@RequestParam(required = false) final String orderImportsSheetName)
-			throws EncryptedDocumentException, InvalidFormatException, IOException {
+			@RequestParam(required = false) final String orderImportsSheetName) throws InvalidFormatException, IOException {
 		// do the import
 		final Sale sale = importService.importCustomersFromExcel(file, orderImportsSheetName, saleYear);
 
@@ -102,8 +100,7 @@ public class Import {
 	@PostMapping(consumes = { MEDIA_TYPE_XLS, MEDIA_TYPE_XLSX,
 			MediaType.MULTIPART_FORM_DATA_VALUE }, produces = MediaType.APPLICATION_JSON_UTF8_VALUE, value = IMPORT_PLANTS_EXCEL)
 	public SaleSummary importPlantsFromExcel(@RequestParam final MultipartFile file, @RequestParam final Integer saleYear,
-			@RequestParam(required = false) final String plantImportsSheetName)
-			throws EncryptedDocumentException, InvalidFormatException, IOException {
+			@RequestParam(required = false) final String plantImportsSheetName) throws InvalidFormatException, IOException {
 		// do the import
 		final Sale sale = importService.importPlantsFromExcel(file, plantImportsSheetName, saleYear);
 

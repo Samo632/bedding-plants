@@ -16,6 +16,27 @@
 		<title th:text="${appName}">Bedding Plants</title>
 	</head>
 	<body>
-		<img th:src="*{'data:image/png;base64,'+mapImg}" alt="Google Map Image of Sale Addresses"/>
+		<div id="map"></div>
+		<script th:inline="javascript">
+		  var map;
+		  function initMap() {
+			var scoutHutLat = /*[[${scoutHutLat}]]*/ 53.48;
+			var scoutHutLng = /*[[${scoutHutLng}]]*/ -2.14;
+			var defaultZoom = /*[[${defaultZoom}]]*/ 15;
+			var viewportMaxLat = /*[[${viewportMaxLat}]]*/ 54;
+			var viewportMinLat = /*[[${viewportMinLat}]]*/ 53;
+			var viewportMaxLng = /*[[${viewportMaxLng}]]*/ -3;
+			var viewportMinLng = /*[[${viewportMinLng}]]*/ -2;
+			
+		    map = new google.maps.Map(document.getElementById('map'), {
+		      center: {lat: scoutHutLat, lng: scoutHutLng},
+		      zoom: defaultZoom
+		    });
+		  }
+		</script>
+		<script th:inline="javascript">
+			var geolocatedAddresses = /*[[${geolocatedAddresses}]]*/ null;
+		</script>
+		<script th:src="@{${'https://maps.googleapis.com/maps/api/js?key=' + googleApiKey + '&callback=initMap'}}" async defer></script>
 	</body>
 </html>

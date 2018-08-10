@@ -26,24 +26,27 @@ import uk.co.gmescouts.stmarys.beddingplants.sales.service.SalesService;
 public class Sales {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Sales.class);
 
+	private static final String TYPE_ORDER = "/order";
+	private static final String TYPE_PLANT = "/plant";
+
 	/*
 	 * Summaries
 	 */
-	private final static String SALE_SUMMARY = "/summary";
+	private static final String SALE_SUMMARY = "/summary";
 
 	/*
 	 * Details
 	 */
-	private final static String SALE_DETAIL = "/detail";
-	private final static String SALE_DETAIL_ORDER = SALE_DETAIL + "/order";
-	private final static String SALE_DETAIL_PLANT = SALE_DETAIL + "/plant";
+	private static final String SALE_DETAIL = "/detail";
+	private static final String SALE_DETAIL_ORDER = SALE_DETAIL + TYPE_ORDER;
+	private static final String SALE_DETAIL_PLANT = SALE_DETAIL + TYPE_PLANT;
 
 	/*
 	 * Deletes
 	 */
-	private final static String DELETE_SALE = "/";
-	private final static String DELETE_ORDER = "/order";
-	private final static String DELETE_PLANT = "/plant";
+	private static final String DELETE_SALE = "/";
+	private static final String DELETE_ORDER = TYPE_ORDER;
+	private static final String DELETE_PLANT = TYPE_PLANT;
 
 	@Resource
 	private SalesService salesService;

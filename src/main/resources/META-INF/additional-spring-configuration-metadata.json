@@ -10,13 +10,68 @@
     "description": "Name of Plant Imports Worksheet within Excel Workbook"
   },
   {
+    "name": "beddingplants.import.defaultCity",
+    "type": "java.lang.String",
+    "description": "City to use in Addresses if not specified in the import spreadsheet (where it's optional)"
+  },
+  {
     "name": "beddingplants.geolocation.googleApiKey",
     "type": "java.lang.String",
     "description": "Google API-Key for use with the BeddingPlants application"
   },
   {
-    "name": "beddingplants.import.defaultCity",
+    "name": "beddingplants.geolocation.googleMapsImgScale",
+    "type": "java.lang.Integer",
+    "description": "Google Maps Image scale"
+  },
+  {
+    "name": "beddingplants.geolocation.googleMapsImgWidth",
+    "type": "java.lang.Integer",
+    "description": "Google Maps Image width"
+  },
+  {
+    "name": "beddingplants.geolocation.googleMapsImgHeight",
+    "type": "java.lang.Integer",
+    "description": "Google Maps Image height"
+  },
+  {
+    "name": "beddingplants.geolocation.googleMapsImgLangauge",
     "type": "java.lang.String",
-    "description": "City to use in Addresses if not specified in the import spreadsheet (where it's optional)"
+    "description": "Google Maps Image language"
+  },
+  {
+    "name": "beddingplants.export.scoutHutLat",
+    "type": "java.lang.Float",
+    "description": "Scout Hut latitude"
+  },
+  {
+    "name": "beddingplants.export.scoutHutLng",
+    "type": "java.lang.Float",
+    "description": "Scout Hut longitude"
+  },
+  {
+    "name": "beddingplants.export.defaultZoom",
+    "type": "java.lang.Integer",
+    "description": "Default Google Maps zoom level"
+  },
+  {
+    "name": "beddingplants.export.viewportMaxLat",
+    "type": "java.lang.Float",
+    "description": "Default viewport maximum latitude"
+  },
+  {
+    "name": "beddingplants.export.viewportMinLat",
+    "type": "java.lang.Float",
+    "description": "Default viewport minimum latitude"
+  },
+  {
+    "name": "beddingplants.export.viewportMaxLng",
+    "type": "java.lang.Float",
+    "description": "Default viewport maximum longitude"
+  },
+  {
+    "name": "beddingplants.export.viewportMinLng",
+    "type": "java.lang.Float",
+    "description": "Default viewport minimum longitude"
   }
 ]}

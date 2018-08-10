@@ -18,7 +18,6 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -58,28 +57,34 @@ public class ImportService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ImportService.class);
 
-	private final static Map<String, String> ADDRESS_CONTRACTIONS;
+	private static final Map<String, String> ADDRESS_CONTRACTIONS;
 	static {
-		final Map<String, String> contractions = new HashMap<>(10, 1);
+		final Map<String, String> contractions = new HashMap<>(15, 1);
 		contractions.put(" st", " Street");
 		contractions.put(" ave", " Avenue");
+		contractions.put(" av", " Avenue");
 		contractions.put(" rd", " Road");
 		contractions.put(" dv", " Drive");
 		contractions.put(" cres", " Crescent");
 		contractions.put(" cl", " Close");
 		contractions.put(" ln", " Lane");
 		contractions.put(" terr", " Terrace");
-		contractions.put(" gv", " Grove");
+
+		final String GROVE = " Grove";
+
+		contractions.put(" gv", GROVE);
+		contractions.put(" grv", GROVE);
+		contractions.put(" gr", GROVE);
 
 		ADDRESS_CONTRACTIONS = Collections.unmodifiableMap(contractions);
 	}
 
-	private final static Map<Method, Method> IMPORT_METHOD_CACHE = new HashMap<>(100, 1);
+	private static final Map<Method, Method> IMPORT_METHOD_CACHE = new HashMap<>(100, 1);
 
-	private final static Map<Address, Address> IMPORTED_ADDRESS_CACHE = new HashMap<>(500, 1);
+	private static final Map<Address, Address> IMPORTED_ADDRESS_CACHE = new HashMap<>(500, 1);
 
 	public Sale importSaleFromExcelFile(final MultipartFile file, final Integer saleYear, final Double vat, final String orderImportsSheetName,
-			final String plantImportsSheetName) throws InvalidFormatException, EncryptedDocumentException, IOException {
+			final String plantImportsSheetName) throws InvalidFormatException, IOException {
 		LOGGER.info("Importing Sale from file [{}] for Order Year [{}] with VAT [{}]", file.getOriginalFilename(), saleYear, vat);
 
 		// check for existing Sale for the specified year
@@ -100,7 +105,7 @@ public class ImportService {
 	}
 
 	public Sale importCustomersFromExcel(final MultipartFile file, final String orderImportsSheetName, @NotNull final Integer saleYear)
-			throws InvalidFormatException, EncryptedDocumentException, IOException {
+			throws InvalidFormatException, IOException {
 		// get the Sale using the Year
 		final Sale sale = salesService.findSaleByYear(saleYear);
 
@@ -108,7 +113,7 @@ public class ImportService {
 	}
 
 	public Sale importPlantsFromExcel(final MultipartFile file, final String plantImportsSheetName, @NotNull final Integer saleYear)
-			throws InvalidFormatException, EncryptedDocumentException, IOException {
+			throws InvalidFormatException, IOException {
 		// get the Sale using the Year
 		final Sale sale = salesService.findSaleByYear(saleYear);
 
@@ -116,78 +121,85 @@ public class ImportService {
 		return updateSaleWithImportedPlantsFromExcel(file, plantImportsSheetName, sale);
 	}
 
-	private Sale updateSaleWithImportedCustomersFromExcel(final MultipartFile file, final String orderImportsSheetName, @NotNull final Sale sale)
-			throws InvalidFormatException, EncryptedDocumentException, IOException {
+	private Sale updateSaleWithImportedCustomersFromExcel(final MultipartFile file, final String orderImportsSheetName, @NotNull Sale sale)
+			throws InvalidFormatException, IOException {
 		LOGGER.info("Importing Orders from file [{}] for Sale [{}]", file.getOriginalFilename(), sale.getYear());
 
 		// check the Sale contains some Plants
 		final Set<Plant> plants = sale.getPlants();
-		if (plants == null || plants.size() <= 0) {
+		if (plants.isEmpty()) {
 			throw new IllegalArgumentException(String.format("Cannot import Orders for a Sale without Plants [%d]", sale.getYear()));
 		}
 
 		// get Workbook from file (ensure we can read it and determine the type)
-		final Workbook workbook = WorkbookFactory.create(file.getInputStream());
+		try (final Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
 
-		// Order Imports
-		final List<ExcelOrder> importedOrders = readDataFromExcelFile(file.getInputStream(), workbook,
-				StringUtils.defaultIfBlank(orderImportsSheetName, importConfiguration.getOrderImportsName()), ExcelOrder.class);
+			// Order Imports
+			final List<ExcelOrder> importedOrders = readDataFromExcelFile(file.getInputStream(), workbook,
+					StringUtils.defaultIfBlank(orderImportsSheetName, importConfiguration.getOrderImportsName()), ExcelOrder.class);
 
-		// prepare address cache for import
-		// TODO: surely there's a JPA way of handling this though, right?
-		IMPORTED_ADDRESS_CACHE.clear();
+			// prepare address cache for import
+			// TODO: surely there's a JPA way of handling this though, right?
+			IMPORTED_ADDRESS_CACHE.clear();
 
-		// convert to Orders
-		final List<Customer> customerOrders = importedOrders.stream().filter(ExcelOrder::isValid).map(order -> createCustomer(order, plants))
-				.collect(Collectors.toList());
-		LOGGER.info("Imported [{}] valid Customer Orders", customerOrders.size());
+			// convert to Orders
+			final List<Customer> customerOrders = importedOrders.stream().filter(ExcelOrder::isValid).map(order -> createCustomer(order, plants))
+					.collect(Collectors.toList());
+			LOGGER.info("Imported [{}] valid Customer Orders", customerOrders.size());
 
-		// merge duplicate Customers and aggregate Orders
-		final Set<Customer> customers = new HashSet<>();
-		customerOrders.forEach(customerOrder -> {
-			// is Customer already present?
-			if (customers.contains(customerOrder)) {
-				final Customer existingCustomer = customers.stream().filter(customerOrder::equals).findFirst()
-						.orElseThrow(IllegalStateException::new);
+			// merge duplicate Customers and aggregate Orders
+			final Set<Customer> customers = new HashSet<>();
+			customerOrders.forEach(customerOrder -> {
+				// is Customer already present?
+				if (customers.contains(customerOrder)) {
+					final Customer existingCustomer = customers.stream().filter(customerOrder::equals).findFirst()
+							.orElseThrow(IllegalStateException::new);
 
-				// add new Order(s) to existing Customer
-				customerOrder.getOrders().forEach(existingCustomer::addOrder);
-			} else {
-				// add new Customer with their Order
-				customers.add(customerOrder);
-			}
-		});
-		LOGGER.info("Imported [{}] de-duplicated Customers", customers.size());
+					// add new Order(s) to existing Customer
+					customerOrder.getOrders().forEach(existingCustomer::addOrder);
+				} else {
+					// add new Customer with their Order
+					customers.add(customerOrder);
+				}
+			});
+			LOGGER.info("Imported [{}] de-duplicated Customers", customers.size());
 
-		// TODO is the "JPA way" to save the Customers (and the Plants) separately and then "refresh" the Sale instead?
-		// add Customer to Sale
-		// done as a second loop to avoid confusing the Customer#equals when looking for duplicates above
-		customers.forEach(sale::addCustomer);
+			// TODO is the "JPA way" to save the Customers (and the Plants) separately and then "refresh" the Sale instead?
+			// add Customer to Sale
+			// done as a second loop to avoid confusing the Customer#equals when looking for duplicates above
+			customers.forEach(sale::addCustomer);
+
+			// save any Sale updates
+			sale = salesService.saveSale(sale);
+		}
 
 		// return the updated Sale
-		return salesService.saveSale(sale);
+		return sale;
 	}
 
-	private Sale updateSaleWithImportedPlantsFromExcel(final MultipartFile file, final String plantImportsSheetName, @NotNull final Sale sale)
-			throws InvalidFormatException, EncryptedDocumentException, IOException {
+	private Sale updateSaleWithImportedPlantsFromExcel(final MultipartFile file, final String plantImportsSheetName, @NotNull Sale sale)
+			throws InvalidFormatException, IOException {
 		LOGGER.info("Importing Plants from file [{}] for Sale [{}]", file.getOriginalFilename(), sale.getYear());
 
 		// get Workbook from file (ensure we can read it and determine the type)
-		final Workbook workbook = WorkbookFactory.create(file.getInputStream());
+		try (final Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
+			// Plant Imports
+			final List<ExcelPlant> importedPlants = readDataFromExcelFile(file.getInputStream(), workbook,
+					StringUtils.defaultIfBlank(plantImportsSheetName, importConfiguration.getPlantImportsName()), ExcelPlant.class);
 
-		// Plant Imports
-		final List<ExcelPlant> importedPlants = readDataFromExcelFile(file.getInputStream(), workbook,
-				StringUtils.defaultIfBlank(plantImportsSheetName, importConfiguration.getPlantImportsName()), ExcelPlant.class);
+			// convert to Plants
+			final Set<Plant> plants = importedPlants.stream().filter(ExcelPlant::isValid).map(this::createPlant).collect(Collectors.toSet());
+			LOGGER.info("Imported [{}] valid Plants", plants.size());
 
-		// convert to Plants
-		final Set<Plant> plants = importedPlants.stream().filter(ExcelPlant::isValid).map(this::createPlant).collect(Collectors.toSet());
-		LOGGER.info("Imported [{}] valid Plants", plants.size());
+			// add to Sale
+			plants.forEach(sale::addPlant);
 
-		// add to Sale
-		plants.forEach(sale::addPlant);
+			// save any Sale updates
+			sale = salesService.saveSale(sale);
+		}
 
 		// return the updated Sale
-		return salesService.saveSale(sale);
+		return sale;
 	}
 
 	private Plant createPlant(final ExcelPlant excelPlant) {
@@ -224,7 +236,7 @@ public class ImportService {
 		// determine DeliveryDay (default is Saturday if not present)
 		final DeliveryDay deliveryDay = StringUtils.isNotBlank(excelOrder.getDeliveryDay())
 				? DeliveryDay.valueOf(StringUtils.capitalize(excelOrder.getDeliveryDay()))
-				: DeliveryDay.Saturday;
+				: DeliveryDay.SATURDAY;
 
 		// create Order (without Customer or OrderItems)
 		final Order order = Order.builder().num(Integer.valueOf(excelOrder.getOrderNumber())).deliveryDay(deliveryDay)
@@ -347,11 +359,10 @@ public class ImportService {
 		return setter;
 	}
 
-	@SuppressWarnings("deprecation")
 	private <T> void normaliseImportedFields(final T imported) {
 		Arrays.stream(imported.getClass().getDeclaredMethods())
 				// find the getter methods on the import object (public accessible returning Strings)
-				.filter(method -> method.getName().startsWith("get") && method.isAccessible() && String.class.equals(method.getReturnType()))
+				.filter(method -> method.getName().startsWith("get") && method.canAccess(imported) && String.class.equals(method.getReturnType()))
 				// normalise the value and set back on the object
 				.forEach(getter -> {
 					try {

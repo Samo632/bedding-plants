@@ -16,7 +16,4 @@ public class Geolocation {
 	private Double latitude;
 
 	private Double longitude;
-
-	// TODO: needed anywhere?
-	// private Bounds bounds;
 }

@@ -3,7 +3,7 @@ package uk.co.gmescouts.stmarys.beddingplants.data.model;
 import java.util.Arrays;
 
 public enum OrderType {
-	Collect('C'), Deliver('D');
+	COLLECT('C'), DELIVER('D');
 
 	private final Character type;
 

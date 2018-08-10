@@ -36,8 +36,8 @@
 					<td class="label">Email</td><td th:text="${order.customer.emailAddress}" class="detail">[Email]</td>
 				</tr>
 				<tr>
-					<td class="label">Collect/Deliver</td><td th:text="${order.type}" class="detail">[Collect/Deliver]</td>
-					<td class="label">Delivery Day</td><td th:text="${order.deliveryDay}" class="detail">[Deilvery Day]</td>
+					<td class="label">Collect/Deliver</td><td th:text="${#strings.capitalize(#strings.toLowerCase(order.type))}" class="detail">[Collect/Deliver]</td>
+					<td class="label">Delivery Day</td><td th:text="${#strings.capitalize(#strings.toLowerCase(order.deliveryDay))}" class="detail">[Delivery Day]</td>
 				</tr>
 				<tr>
 					<td class="label">Total Price</td><td th:text="${#numbers.formatCurrency(@salesService.orderPrice(order))}" class="detail price">£ [Total Price]</td>
