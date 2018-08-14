@@ -19,6 +19,9 @@ import uk.co.gmescouts.stmarys.beddingplants.data.model.Plant;
 import uk.co.gmescouts.stmarys.beddingplants.exports.configuration.ExportConfiguration;
 import uk.co.gmescouts.stmarys.beddingplants.exports.service.ExportService;
 import uk.co.gmescouts.stmarys.beddingplants.geolocation.configuration.GeolocationConfiguration;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapMarkerColour;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapMarkerSize;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapType;
 
 @Controller
 public class ExportHtml {
@@ -73,7 +76,9 @@ public class ExportHtml {
 
 	@GetMapping(EXPORT_CUSTOMER_ADDRESSES_HTML)
 	public String exportSaleAddressesAsMap(final Model model, @PathVariable final Integer saleYear,
-			@RequestParam(required = false) final OrderType orderType) {
+			@RequestParam(required = false) final OrderType orderType, @RequestParam(required = true, defaultValue = "ROADMAP") final MapType mapType,
+			@RequestParam(required = true, defaultValue = "TINY") final MapMarkerSize mapMarkerSize,
+			@RequestParam(required = true, defaultValue = "YELLOW") final MapMarkerColour mapMarkerColour) {
 		LOGGER.info("Exporting (HTML); Addresses for Sale [{}] with Order Type [{}]", saleYear, orderType);
 
 		addCommonModelAttributes(model);
@@ -82,7 +87,10 @@ public class ExportHtml {
 		model.addAttribute("googleApiKey", geolocationConfiguration.getGoogleApiKey());
 
 		// geolocated Addresses to be plotted on the Map
-		model.addAttribute("geolocatedAddresses", exportService.getSaleAddresses(saleYear, orderType, true));
+		model.addAttribute("geolocatedPoints", exportService.getGeolocatedSaleAddressesAsPoints(saleYear, orderType));
+
+		// Google Maps MapTypeId
+		model.addAttribute("mapTypeId", mapType.getGoogleMapsMapTypeId());
 
 		// Scout Hut location (default Map centre)
 		model.addAttribute("scoutHutLat", exportConfiguration.getScoutHutLat());

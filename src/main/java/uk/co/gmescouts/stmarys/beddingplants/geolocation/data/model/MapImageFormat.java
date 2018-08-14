@@ -1,0 +1,21 @@
+package uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model;
+
+import com.google.maps.StaticMapsRequest.ImageFormat;
+
+import lombok.Getter;
+
+public enum MapImageFormat {
+	PNG(ImageFormat.png, "png"), PNG8(ImageFormat.png8, "png"), PNG32(ImageFormat.png32, "png"), GIF(ImageFormat.gif, "gif"), JPG(ImageFormat.jpg,
+			"jpg"), JPG_BASELINE(ImageFormat.jpgBaseline, "jpg");
+
+	@Getter
+	private ImageFormat googleStaticMapsImageFormat;
+
+	@Getter
+	private String filenameExtension;
+
+	private MapImageFormat(final ImageFormat googleStaticMapsImageFormat, final String filenameExtension) {
+		this.googleStaticMapsImageFormat = googleStaticMapsImageFormat;
+		this.filenameExtension = filenameExtension;
+	}
+}

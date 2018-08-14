@@ -18,14 +18,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.maps.StaticMapsRequest.ImageFormat;
-import com.google.maps.StaticMapsRequest.Markers.MarkersSize;
-import com.google.maps.StaticMapsRequest.StaticMapType;
 import com.google.maps.errors.ApiException;
 
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Address;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.OrderType;
 import uk.co.gmescouts.stmarys.beddingplants.exports.service.ExportService;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapImageFormat;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapType;
 
 @RestController
 @RequestMapping(value = "/export")
@@ -73,42 +72,22 @@ public class Export {
 	}
 
 	@GetMapping(EXPORT_CUSTOMER_ADDRESSES_IMG)
-	public ResponseEntity<ByteArrayResource> exportSaleAddressesAsMap(final Model model, @PathVariable final Integer saleYear,
+	public ResponseEntity<ByteArrayResource> exportSaleAddressesAsImage(final Model model, @PathVariable final Integer saleYear,
 			@RequestParam(required = false) final OrderType orderType,
-			@RequestParam(required = false, defaultValue = "png") final ImageFormat imageFormat,
-			@RequestParam(required = false, defaultValue = "roadmap") final StaticMapType staticMapType,
-			@RequestParam(required = false, defaultValue = "tiny") final MarkersSize markersSize,
-			@RequestParam(required = false, defaultValue = "yellow") final String markersColour)
-			throws ApiException, InterruptedException, IOException {
+			@RequestParam(required = true, defaultValue = "PNG") final MapImageFormat mapImageFormat,
+			@RequestParam(required = true, defaultValue = "ROADMAP") final MapType mapType) throws ApiException, InterruptedException, IOException {
 		LOGGER.info("Exporting (IMG); Addresses for Sale [{}] with Order Type [{}]", saleYear, orderType);
 
 		// get the image
-		final byte[] mapImg = exportService.exportGeolocatedSaleAddressesToGoogleMap(saleYear, orderType, imageFormat, staticMapType, markersSize,
-				markersColour);
+		final byte[] mapImg = exportService.exportGeolocatedSaleAddressesToImage(saleYear, orderType, mapImageFormat, mapType);
 
 		if (mapImg == null) {
 			return ResponseEntity.noContent().build();
 		}
 
-		String extension;
-		switch (imageFormat) {
-		case jpgBaseline:
-			extension = "jpg";
-			break;
-		case png32:
-			extension = "png";
-			break;
-		case png8:
-			extension = "png";
-			break;
-		default:
-			extension = imageFormat.toString();
-			break;
-		}
-
 		return ResponseEntity.ok()
-				.headers(getNoCacheHeaders(
-						String.format("attachment; filename=\"map_sale_orders_%s%s.%s\"", saleYear, (orderType == null ? "" : orderType), extension)))
+				.headers(getNoCacheHeaders(String.format("attachment; filename=\"map_sale_orders_%s%s.%s\"", saleYear,
+						(orderType == null ? "" : orderType), mapImageFormat.getFilenameExtension())))
 				.contentLength(mapImg.length).contentType(MediaType.APPLICATION_OCTET_STREAM).body(new ByteArrayResource(mapImg));
 	}
 

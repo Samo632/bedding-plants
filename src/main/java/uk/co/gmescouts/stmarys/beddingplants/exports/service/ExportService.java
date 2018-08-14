@@ -3,8 +3,8 @@ package uk.co.gmescouts.stmarys.beddingplants.exports.service;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,11 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.google.maps.StaticMapsRequest.ImageFormat;
-import com.google.maps.StaticMapsRequest.Markers.MarkersSize;
-import com.google.maps.StaticMapsRequest.StaticMapType;
 import com.google.maps.errors.ApiException;
-import com.google.maps.model.LatLng;
 import com.itextpdf.html2pdf.ConverterProperties;
 import com.itextpdf.html2pdf.HtmlConverter;
 import com.itextpdf.kernel.PdfException;
@@ -43,6 +39,11 @@ import uk.co.gmescouts.stmarys.beddingplants.data.model.OrderItem;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.OrderType;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Plant;
 import uk.co.gmescouts.stmarys.beddingplants.exports.ExportHtml;
+import uk.co.gmescouts.stmarys.beddingplants.exports.data.model.GeolocatedPoint;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapImageFormat;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapMarkerColour;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapMarkerSize;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapType;
 import uk.co.gmescouts.stmarys.beddingplants.geolocation.service.GeolocationService;
 
 @Service
@@ -116,31 +117,6 @@ public class ExportService {
 		return amount;
 	}
 
-	public Set<Address> getSaleAddresses(@NotNull final Integer saleYear, final OrderType orderType, final boolean geolocatedOnly) {
-		// get Addresses for specified Sale Year/OrderType
-		Set<Address> addresses;
-		if (orderType != null) {
-			addresses = addressRepository.findAddressByCustomersSaleYearAndCustomersOrdersType(saleYear, orderType);
-		} else {
-			addresses = addressRepository.findAddressByCustomersSaleYear(saleYear);
-		}
-
-		// filter to geolocated addresses only if so requested
-		if (geolocatedOnly) {
-			// geolocate Address(es), if not already
-			if (CollectionUtils.isNotEmpty(addresses)) {
-				addresses.forEach(this::geolocateAddress);
-
-				// save these to the database
-				addresses = new HashSet<>(addressRepository.saveAll(addresses));
-			}
-
-			addresses = addresses.stream().filter(this::isAddressGeolocated).collect(Collectors.toSet());
-		}
-
-		return addresses;
-	}
-
 	public byte[] exportSaleCustomersToPdf(@NotNull final Integer saleYear, final OrderType orderType) throws IOException {
 		LOGGER.info("Exporting Customer Orders for Sale [{}]", saleYear);
 
@@ -177,40 +153,87 @@ public class ExportService {
 		return pdf;
 	}
 
-	public byte[] exportGeolocatedSaleAddressesToGoogleMap(@NotNull final Integer saleYear, final OrderType orderType,
-			@NotNull final ImageFormat imageFormat, @NotNull final StaticMapType staticMapType, @NotNull final MarkersSize markersSize,
-			@NotNull final String markersColour) throws ApiException, InterruptedException, IOException {
-		// get the (geolocated) Addresses
-		final Set<Address> addresses = getSaleAddresses(saleYear, orderType, true);
+	public Set<GeolocatedPoint> getGeolocatedSaleAddressesAsPoints(@NotNull final Integer saleYear, final OrderType orderType) {
+		final Set<Address> geolocatedAddresses = getSaleAddresses(saleYear, orderType, true);
+
+		Set<GeolocatedPoint> geolocatedPoints = Collections.emptySet();
+		if (geolocatedAddresses != null) {
+			// convert Addresses to GeolocatedPoints ready for plotting on the map
+			geolocatedPoints = geolocatedAddresses.stream().map(ExportService::convertAddressToGeolocatedPoint).collect(Collectors.toSet());
+		}
+		return geolocatedPoints;
+	}
+
+	public byte[] exportGeolocatedSaleAddressesToImage(@NotNull final Integer saleYear, final OrderType orderType,
+			@NotNull final MapImageFormat mapImageFormat, @NotNull final MapType mapType) throws ApiException, InterruptedException, IOException {
+		// get the (geolocated) Addresses as Points
+		final Set<GeolocatedPoint> geolocatedPoints = getGeolocatedSaleAddressesAsPoints(saleYear, orderType);
 
 		// generate the image
-		return plotAddressesOnMap(addresses, imageFormat, staticMapType, markersSize, markersColour);
-	}
-
-	private boolean isAddressGeolocated(@NotNull final Address address) {
-		return address.getGeolocation() != null && StringUtils.isNotBlank(address.getGeolocation().getFormattedAddress());
-	}
-
-	private byte[] plotAddressesOnMap(@NotNull final Set<Address> addresses, @NotNull final ImageFormat imageFormat,
-			@NotNull final StaticMapType staticMapType, @NotNull final MarkersSize markersSize, @NotNull final String markersColour)
-			throws ApiException, InterruptedException, IOException {
-		LOGGER.debug("Generating Google Map Image for [{}] Addresses", addresses.size());
-
 		byte[] mapImg = null;
-		if (CollectionUtils.isNotEmpty(addresses)) {
-			// build up points to be added to the image
-			final Set<LatLng> points = addresses.stream().map(Address::getGeolocation).filter(Objects::nonNull).map(geolocation -> {
-				final LatLng latLng = new LatLng();
-				latLng.lat = geolocation.getLatitude();
-				latLng.lng = geolocation.getLongitude();
-				return latLng;
-			}).collect(Collectors.toSet());
-
-			// get the image
-			mapImg = geolocationService.plotPointsOnGoogleMapImage(points, imageFormat, staticMapType, markersSize, markersColour);
+		if (CollectionUtils.isNotEmpty(geolocatedPoints)) {
+			// get the image containing the Geolocated Points
+			mapImg = geolocationService.plotPointsOnMapImage(geolocatedPoints, mapImageFormat, mapType);
 		}
 
 		return mapImg;
+	}
+
+	public Set<Address> getSaleAddresses(@NotNull final Integer saleYear, final OrderType orderType, final boolean geolocatedOnly) {
+		// get Addresses for specified Sale Year/OrderType
+		Set<Address> addresses;
+		if (orderType != null) {
+			addresses = addressRepository.findAddressByCustomersSaleYearAndCustomersOrdersType(saleYear, orderType);
+		} else {
+			addresses = addressRepository.findAddressByCustomersSaleYear(saleYear);
+		}
+
+		// filter to geolocated addresses only if so requested
+		if (geolocatedOnly) {
+			// geolocate Address(es), if not already
+			if (CollectionUtils.isNotEmpty(addresses)) {
+				addresses.forEach(this::geolocateAddress);
+
+				// save these to the database
+				addresses = new HashSet<>(addressRepository.saveAll(addresses));
+			}
+
+			addresses = addresses.stream().filter(ExportService::isAddressGeolocated).collect(Collectors.toSet());
+		}
+
+		return addresses;
+	}
+
+	private static boolean isAddressGeolocated(@NotNull final Address address) {
+		return address.getGeolocation() != null && StringUtils.isNotBlank(address.getGeolocation().getFormattedAddress());
+	}
+
+	private static GeolocatedPoint convertAddressToGeolocatedPoint(@NotNull final Address address) {
+		final GeolocatedPoint geolocatedPoint = new GeolocatedPoint(address.getGeolocation().getLatitude(), address.getGeolocation().getLongitude(),
+				address.getGeolocatableAddress());
+
+		// determine size of the marker based on number of orders
+		final long numOrders = address.getCustomers().stream().flatMap(customer -> customer.getOrders().stream()).count();
+		if (numOrders == 1) {
+			geolocatedPoint.setMapMarkerSize(MapMarkerSize.NORMAL);
+		} else {
+			geolocatedPoint.setMapMarkerSize(MapMarkerSize.MID);
+		}
+
+		// determine colour of marker based on order type
+		final boolean delivery = address.getCustomers().stream().flatMap(customer -> customer.getOrders().stream()).map(Order::getType)
+				.anyMatch(ExportService::isDelivery);
+		if (delivery) {
+			geolocatedPoint.setMapMarkerColour(MapMarkerColour.RED);
+		} else {
+			geolocatedPoint.setMapMarkerColour(MapMarkerColour.GREEN);
+		}
+
+		return geolocatedPoint;
+	}
+
+	private static boolean isDelivery(@NotNull final OrderType orderType) {
+		return OrderType.DELIVER.equals(orderType);
 	}
 
 	private void geolocateAddress(@NotNull final Address address) {
