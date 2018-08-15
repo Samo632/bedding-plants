@@ -76,7 +76,7 @@ public class ExportService {
 	@Value("${server.servlet.context-path}")
 	private String baseUri;
 
-	public ExportService() throws UnknownHostException {
+	private ExportService() throws UnknownHostException {
 		hostname = InetAddress.getLocalHost().getHostName();
 	}
 
@@ -213,7 +213,7 @@ public class ExportService {
 				address.getGeolocatableAddress());
 
 		// determine size of the marker based on number of orders
-		final long numOrders = address.getCustomers().stream().flatMap(customer -> customer.getOrders().stream()).count();
+		final long numOrders = address.getCustomers().stream().mapToLong(customer -> customer.getOrders().size()).sum();
 		if (numOrders == 1) {
 			geolocatedPoint.setMapMarkerSize(MapMarkerSize.NORMAL);
 		} else {

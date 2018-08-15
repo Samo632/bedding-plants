@@ -41,7 +41,8 @@ public class Address {
 		return this.getGeolocatableAddress().toUpperCase();
 	}
 
-	public void setId(final String id) {
+	@SuppressWarnings("EmptyMethod")
+    public void setId(final String id) {
 		// intentionally blank, for Entity/Jackson construction only
 	}
 

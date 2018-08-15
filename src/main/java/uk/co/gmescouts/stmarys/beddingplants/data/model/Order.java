@@ -44,7 +44,8 @@ public class Order {
 		return Long.valueOf(String.format("%04d%03d", customer.getSale().getYear(), this.num));
 	}
 
-	public void setId(final Long id) {
+	@SuppressWarnings("EmptyMethod")
+    public void setId(final Long id) {
 		// intentionally blank, only needed for Hibernate
 	}
 

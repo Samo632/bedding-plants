@@ -28,7 +28,7 @@ import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapType;
 
 @RestController
 @RequestMapping(value = "/export")
-public class Export {
+class Export {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Export.class);
 
 	/*
@@ -40,7 +40,7 @@ public class Export {
 	/*
 	 * Addresses
 	 */
-	public static final String EXPORT_CUSTOMER_ADDRESSES = "/addresses/{saleYear}";
+	private static final String EXPORT_CUSTOMER_ADDRESSES = "/addresses/{saleYear}";
 	private static final String EXPORT_CUSTOMER_ADDRESSES_IMG = EXPORT_CUSTOMER_ADDRESSES + "/img";
 
 	@Resource
@@ -74,8 +74,8 @@ public class Export {
 	@GetMapping(EXPORT_CUSTOMER_ADDRESSES_IMG)
 	public ResponseEntity<ByteArrayResource> exportSaleAddressesAsImage(final Model model, @PathVariable final Integer saleYear,
 			@RequestParam(required = false) final OrderType orderType,
-			@RequestParam(required = true, defaultValue = "PNG") final MapImageFormat mapImageFormat,
-			@RequestParam(required = true, defaultValue = "ROADMAP") final MapType mapType) throws ApiException, InterruptedException, IOException {
+			@RequestParam(defaultValue = "PNG") final MapImageFormat mapImageFormat,
+			@RequestParam(defaultValue = "ROADMAP") final MapType mapType) throws ApiException, InterruptedException, IOException {
 		LOGGER.info("Exporting (IMG); Addresses for Sale [{}] with Order Type [{}]", saleYear, orderType);
 
 		// get the image

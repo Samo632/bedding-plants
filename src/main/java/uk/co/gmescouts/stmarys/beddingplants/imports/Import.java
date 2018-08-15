@@ -22,7 +22,7 @@ import uk.co.gmescouts.stmarys.beddingplants.sales.service.SalesService;
 
 @RestController
 @RequestMapping(value = "/import")
-public class Import {
+class Import {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Import.class);
 
 	private static final String IMPORT_TYPE_EXCEL = "/excel";

@@ -9,12 +9,12 @@ public enum MapImageFormat {
 			"jpg"), JPG_BASELINE(ImageFormat.jpgBaseline, "jpg");
 
 	@Getter
-	private ImageFormat googleStaticMapsImageFormat;
+	private final ImageFormat googleStaticMapsImageFormat;
 
 	@Getter
-	private String filenameExtension;
+	private final String filenameExtension;
 
-	private MapImageFormat(final ImageFormat googleStaticMapsImageFormat, final String filenameExtension) {
+	MapImageFormat(final ImageFormat googleStaticMapsImageFormat, final String filenameExtension) {
 		this.googleStaticMapsImageFormat = googleStaticMapsImageFormat;
 		this.filenameExtension = filenameExtension;
 	}

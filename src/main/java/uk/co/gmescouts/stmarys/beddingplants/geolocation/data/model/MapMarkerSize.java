@@ -10,12 +10,12 @@ public enum MapMarkerSize {
 	TINY(MarkersSize.tiny, 2), SMALL(MarkersSize.small, 5), NORMAL(MarkersSize.normal, 10), MID(MarkersSize.mid, 15), LARGE(MarkersSize.mid, 20);
 
 	@Getter
-	private MarkersSize googleStaticMapsMarkerSize;
+	private final MarkersSize googleStaticMapsMarkerSize;
 
 	@Getter
-	private int pixels;
+	private final int pixels;
 
-	private MapMarkerSize(final MarkersSize googleStaticMapsMarkerSize, final int pixels) {
+	MapMarkerSize(final MarkersSize googleStaticMapsMarkerSize, final int pixels) {
 		this.googleStaticMapsMarkerSize = googleStaticMapsMarkerSize;
 		this.pixels = pixels;
 	}

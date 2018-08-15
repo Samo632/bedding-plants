@@ -53,6 +53,7 @@ public class ExportHtml {
 	@Resource
 	private ExportService exportService;
 
+	@SuppressWarnings("SameReturnValue")
 	@GetMapping(EXPORT_CUSTOMER_ORDERS_HTML)
 	public String exportSaleCustomerOrdersAsHtml(final Model model, @PathVariable final Integer saleYear,
 			@RequestParam(required = false) final OrderType orderType) {
@@ -74,11 +75,12 @@ public class ExportHtml {
 		return "orders";
 	}
 
+	@SuppressWarnings("SameReturnValue")
 	@GetMapping(EXPORT_CUSTOMER_ADDRESSES_HTML)
 	public String exportSaleAddressesAsMap(final Model model, @PathVariable final Integer saleYear,
-			@RequestParam(required = false) final OrderType orderType, @RequestParam(required = true, defaultValue = "ROADMAP") final MapType mapType,
-			@RequestParam(required = true, defaultValue = "TINY") final MapMarkerSize mapMarkerSize,
-			@RequestParam(required = true, defaultValue = "YELLOW") final MapMarkerColour mapMarkerColour) {
+			@RequestParam(required = false) final OrderType orderType, @RequestParam(defaultValue = "ROADMAP") final MapType mapType,
+			@RequestParam(defaultValue = "TINY") final MapMarkerSize mapMarkerSize,
+			@RequestParam(defaultValue = "YELLOW") final MapMarkerColour mapMarkerColour) {
 		LOGGER.info("Exporting (HTML); Addresses for Sale [{}] with Order Type [{}]", saleYear, orderType);
 
 		addCommonModelAttributes(model);

@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-public class ImportServiceTest {
+class ImportServiceTest {
 	private final ImportService feature = new ImportService();
 
 	@Test

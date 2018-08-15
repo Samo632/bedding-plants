@@ -1,12 +1,8 @@
 package uk.co.gmescouts.stmarys.beddingplants.geolocation.service;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -64,19 +60,15 @@ public class GeolocationService {
 			final Map<MapMarkerSize, Long> sizeCounts = points.stream().map(GeolocatedPoint::getMapMarkerSize)
 					.collect(Collectors.groupingBy(s -> s, Collectors.counting()));
 			final Optional<Entry<MapMarkerSize, Long>> mapMarkerSize = sizeCounts.entrySet().stream()
-					.max((e0, e1) -> e0.getValue().compareTo(e1.getValue()));
-			if (mapMarkerSize.isPresent()) {
-				markers.size(mapMarkerSize.get().getKey().getGoogleStaticMapsMarkerSize());
-			}
+					.max(Comparator.comparing(Entry::getValue));
+			mapMarkerSize.ifPresent(mapMarkerSizeLongEntry -> markers.size(mapMarkerSizeLongEntry.getKey().getGoogleStaticMapsMarkerSize()));
 
 			// set Marker Colour to be whatever appears most frequently in the Geolocated Points
 			final Map<MapMarkerColour, Long> colourCounts = points.stream().map(GeolocatedPoint::getMapMarkerColour)
 					.collect(Collectors.groupingBy(c -> c, Collectors.counting()));
 			final Optional<Entry<MapMarkerColour, Long>> mapMarkerColour = colourCounts.entrySet().stream()
-					.max((e0, e1) -> e0.getValue().compareTo(e1.getValue()));
-			if (mapMarkerColour.isPresent()) {
-				markers.color(mapMarkerColour.get().getKey().toString());
-			}
+					.max(Comparator.comparing(Entry::getValue));
+			mapMarkerColour.ifPresent(mapMarkerColourLongEntry -> markers.color(mapMarkerColourLongEntry.getKey().toString()));
 
 			// add point locations
 			points.stream().filter(Objects::nonNull).map(GeolocationService::convertGeolocatedPointToLatLng).forEach(markers::addLocation);

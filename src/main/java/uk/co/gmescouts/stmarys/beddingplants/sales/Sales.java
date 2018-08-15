@@ -1,6 +1,7 @@
 package uk.co.gmescouts.stmarys.beddingplants.sales;
 
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -23,7 +24,7 @@ import uk.co.gmescouts.stmarys.beddingplants.sales.service.SalesService;
 
 @RestController
 @RequestMapping(value = "/sale")
-public class Sales {
+class Sales {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Sales.class);
 
 	private static final String TYPE_ORDER = "/order";
@@ -56,7 +57,7 @@ public class Sales {
 		LOGGER.info("Retrieving Sale summaries");
 
 		final Set<SaleSummary> saleSummaries = salesService.findAllSales().stream().map(salesService::summariseSale)
-				.sorted(Comparator.comparingInt(SaleSummary::getYear)).collect(Collectors.toSet());
+				.sorted(Comparator.comparingInt(SaleSummary::getYear)).collect(Collectors.toCollection(LinkedHashSet::new));
 
 		LOGGER.info("Number of Sales [{}]", saleSummaries);
 

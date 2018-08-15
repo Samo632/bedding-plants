@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!--suppress HtmlUnknownAttribute -->
 <html xmlns:th="http://www.thymeleaf.org">
 	<head lang="en">
 		<!-- Required meta tags -->
@@ -49,7 +50,8 @@
 					<tr><th>#</th><th>Name</th><th>Amount</th></tr>
 				</thead>
 				<tbody>
-					<th:block th:each="plant : ${plants}" th:with="amount=${@exportService.orderPlantAmount(order, plant)}">
+					<!--suppress HtmlUnknownTag, HtmlUnknownTag -->
+                    <th:block th:each="plant : ${plants}" th:with="amount=${@exportService.orderPlantAmount(order, plant)}">
 					<tr th:class="${amount != null ? 'ordered' : ''}">
 						<td th:text="${plant.num}">[Num]</td>
 						<td th:text="${plant.name}">[Name]</td>

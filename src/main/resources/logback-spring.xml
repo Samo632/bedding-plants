@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--suppress ALL -->
 <configuration
 	xmlns="http://ch.qos.logback/xml/ns/logback"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"

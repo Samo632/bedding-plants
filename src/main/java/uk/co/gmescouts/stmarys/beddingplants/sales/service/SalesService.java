@@ -152,7 +152,7 @@ public class SalesService {
 
 	private static Double calculateOrderItemCost(@NotNull final OrderItem orderItem) {
 		// (plant cost exc. VAT + VAT) * number of plants ordered
-		final Double vatMultiplier = 1d + (orderItem.getPlant().getSale().getVat() / 100d);
+		final double vatMultiplier = 1d + (orderItem.getPlant().getSale().getVat() / 100d);
 
 		return (orderItem.getPlant().getCost() * vatMultiplier) * orderItem.getCount();
 	}

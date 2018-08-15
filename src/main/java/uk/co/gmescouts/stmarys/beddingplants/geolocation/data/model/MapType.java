@@ -9,12 +9,12 @@ public enum MapType {
 			StaticMapType.terrain, "google.maps.MapTypeId.TERRAIN"), HYBRID(StaticMapType.hybrid, "google.maps.MapTypeId.HYBRID");
 
 	@Getter
-	private StaticMapType googleStaticMapsMapType;
+	private final StaticMapType googleStaticMapsMapType;
 
 	@Getter
-	private String googleMapsMapTypeId;
+	private final String googleMapsMapTypeId;
 
-	private MapType(final StaticMapType googleStaticMapsMapType, final String googleMapsMapTypeId) {
+	MapType(final StaticMapType googleStaticMapsMapType, final String googleMapsMapTypeId) {
 		this.googleStaticMapsMapType = googleStaticMapsMapType;
 		this.googleMapsMapTypeId = googleMapsMapTypeId;
 	}
