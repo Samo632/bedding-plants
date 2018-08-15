@@ -13,14 +13,15 @@ import uk.co.gmescouts.stmarys.beddingplants.exports.configuration.ExportConfigu
 import uk.co.gmescouts.stmarys.beddingplants.geolocation.configuration.GeolocationConfiguration;
 import uk.co.gmescouts.stmarys.beddingplants.imports.configuration.ImportConfiguration;
 
+@SuppressWarnings("WeakerAccess")
 @RunWith(SpringRunner.class)
 @SpringBootTest(properties = { "classpath:application.properties", "classpath:application-dev.properties" })
 @AutoConfigureWebClient
 @ContextConfiguration(classes = { WebMvcConfigure.class, BeddingPlantsConfiguration.class, ImportConfiguration.class, GeolocationConfiguration.class,
 		ExportConfiguration.class })
-class BeddingPlantsApplicationTest {
+public class BeddingPlantsApplicationTest {
 	@SuppressWarnings("EmptyMethod")
-    @Test
+	@Test
 	public void contextLoads() {
 		// intentionally blank
 	}

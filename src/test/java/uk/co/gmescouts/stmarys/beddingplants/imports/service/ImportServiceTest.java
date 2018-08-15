@@ -4,7 +4,8 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-class ImportServiceTest {
+@SuppressWarnings("WeakerAccess")
+public class ImportServiceTest {
 	private final ImportService feature = new ImportService();
 
 	@Test
