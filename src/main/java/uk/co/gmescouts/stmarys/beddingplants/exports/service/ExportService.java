@@ -39,11 +39,11 @@ import uk.co.gmescouts.stmarys.beddingplants.data.model.OrderItem;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.OrderType;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Plant;
 import uk.co.gmescouts.stmarys.beddingplants.exports.ExportHtml;
-import uk.co.gmescouts.stmarys.beddingplants.exports.data.model.GeolocatedPoint;
-import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapImageFormat;
-import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapMarkerColour;
-import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapMarkerSize;
-import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapType;
+import uk.co.gmescouts.stmarys.beddingplants.exports.model.GeolocatedPoint;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.model.MapImageFormat;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.model.MapMarkerColour;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.model.MapMarkerSize;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.model.MapType;
 import uk.co.gmescouts.stmarys.beddingplants.geolocation.service.GeolocationService;
 
 @Service

@@ -1,9 +1,9 @@
-package uk.co.gmescouts.stmarys.beddingplants.exports.data.model;
+package uk.co.gmescouts.stmarys.beddingplants.exports.model;
 
 import lombok.Data;
 import lombok.NonNull;
-import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapMarkerColour;
-import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapMarkerSize;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.model.MapMarkerColour;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.model.MapMarkerSize;
 
 @Data
 public class GeolocatedPoint {

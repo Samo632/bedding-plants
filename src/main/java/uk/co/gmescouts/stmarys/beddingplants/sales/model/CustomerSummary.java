@@ -1,4 +1,4 @@
-package uk.co.gmescouts.stmarys.beddingplants.sales.data.model;
+package uk.co.gmescouts.stmarys.beddingplants.sales.model;
 
 import lombok.Builder;
 import lombok.Data;

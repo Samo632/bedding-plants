@@ -40,8 +40,8 @@ import uk.co.gmescouts.stmarys.beddingplants.data.model.OrderType;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Plant;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Sale;
 import uk.co.gmescouts.stmarys.beddingplants.imports.configuration.ImportConfiguration;
-import uk.co.gmescouts.stmarys.beddingplants.imports.data.excel.ExcelOrder;
-import uk.co.gmescouts.stmarys.beddingplants.imports.data.excel.ExcelPlant;
+import uk.co.gmescouts.stmarys.beddingplants.imports.model.excel.ExcelOrder;
+import uk.co.gmescouts.stmarys.beddingplants.imports.model.excel.ExcelPlant;
 import uk.co.gmescouts.stmarys.beddingplants.sales.service.SalesService;
 
 @Service
@@ -308,8 +308,12 @@ public class ImportService {
 		}
 
 		// normalise postcode
-		final StringBuilder postcodeBuilder = new StringBuilder(excelOrder.getPostcode().replaceAll("\\s+", ""));
-		postcodeBuilder.insert(postcodeBuilder.length() > 3 ? postcodeBuilder.length() - 3 : 0, " ");
+		final StringBuilder postcodeBuilder = new StringBuilder(10);
+		final String importedPostcode = excelOrder.getPostcode();
+		if (importedPostcode != null) {
+			postcodeBuilder.append(importedPostcode.replaceAll("\\s+", ""));
+			postcodeBuilder.insert(postcodeBuilder.length() > 3 ? postcodeBuilder.length() - 3 : 0, " ");
+		}
 
 		final Address address = Address.builder().houseNameNumber(excelOrder.getHouseNameNumber()).street(street).town(excelOrder.getTown())
 				.postcode(postcodeBuilder.toString()).build();

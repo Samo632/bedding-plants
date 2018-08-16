@@ -19,8 +19,8 @@ import uk.co.gmescouts.stmarys.beddingplants.data.model.Order;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.OrderItem;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Plant;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Sale;
-import uk.co.gmescouts.stmarys.beddingplants.sales.data.model.CustomerSummary;
-import uk.co.gmescouts.stmarys.beddingplants.sales.data.model.SaleSummary;
+import uk.co.gmescouts.stmarys.beddingplants.sales.model.CustomerSummary;
+import uk.co.gmescouts.stmarys.beddingplants.sales.model.SaleSummary;
 
 @Service
 public class SalesService {

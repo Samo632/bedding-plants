@@ -42,7 +42,7 @@ public class Customer {
 	}
 
 	@SuppressWarnings("EmptyMethod")
-    public void setId(final String id) {
+	public void setId(final String id) {
 		// intentionally blank, for Entity/Jackson construction only
 	}
 
@@ -88,7 +88,6 @@ public class Customer {
 			order.setCustomer(this);
 
 			// replace existing Order, if present
-			orders.remove(order);
 			orders.add(order);
 		}
 	}

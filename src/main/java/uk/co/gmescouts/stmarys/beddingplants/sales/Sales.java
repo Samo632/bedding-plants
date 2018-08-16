@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Order;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Plant;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Sale;
-import uk.co.gmescouts.stmarys.beddingplants.sales.data.model.SaleSummary;
+import uk.co.gmescouts.stmarys.beddingplants.sales.model.SaleSummary;
 import uk.co.gmescouts.stmarys.beddingplants.sales.service.SalesService;
 
 @RestController

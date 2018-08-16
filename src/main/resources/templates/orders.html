@@ -30,7 +30,7 @@
 					<td class="label">C/O</td><td th:text="${order.courtesyOfName}" class="detail">[C/O]</td>
 				</tr>
 				<tr>
-					<td class="label">Address</td><td colspan="3" th:text="${order.customer.address.geolocatableAddress}" class="detail">[Address]</td>
+					<td class="label">Address</td><td colspan="3" th:text="*{order.customer.address != null}? ${order.customer.address.geolocatableAddress} : ''" class="detail">[Address]</td>
 				</tr>
 				<tr>
 					<td class="label">Telephone</td><td th:text="${order.customer.telephone}" class="detail">[Telephone]</td>

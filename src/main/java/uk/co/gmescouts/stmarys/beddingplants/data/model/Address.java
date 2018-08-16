@@ -42,7 +42,7 @@ public class Address {
 	}
 
 	@SuppressWarnings("EmptyMethod")
-    public void setId(final String id) {
+	public void setId(final String id) {
 		// intentionally blank, for Entity/Jackson construction only
 	}
 
@@ -122,7 +122,6 @@ public class Address {
 			customer.setAddress(this);
 
 			// replace existing Customer, if present
-			customers.remove(customer);
 			customers.add(customer);
 		}
 	}

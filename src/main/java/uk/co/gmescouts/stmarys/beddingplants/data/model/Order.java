@@ -45,7 +45,7 @@ public class Order {
 	}
 
 	@SuppressWarnings("EmptyMethod")
-    public void setId(final Long id) {
+	public void setId(final Long id) {
 		// intentionally blank, only needed for Hibernate
 	}
 
@@ -89,7 +89,6 @@ public class Order {
 			orderItem.setOrder(this);
 
 			// replace existing OrderItem, if present
-			orderItems.remove(orderItem);
 			orderItems.add(orderItem);
 		}
 	}

@@ -1,4 +1,4 @@
-package uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model;
+package uk.co.gmescouts.stmarys.beddingplants.geolocation.model;
 
 import com.google.maps.StaticMapsRequest.StaticMapType;
 

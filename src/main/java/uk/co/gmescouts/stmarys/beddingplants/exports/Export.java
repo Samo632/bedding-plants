@@ -23,8 +23,8 @@ import com.google.maps.errors.ApiException;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Address;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.OrderType;
 import uk.co.gmescouts.stmarys.beddingplants.exports.service.ExportService;
-import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapImageFormat;
-import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapType;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.model.MapImageFormat;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.model.MapType;
 
 @RestController
 @RequestMapping(value = "/export")

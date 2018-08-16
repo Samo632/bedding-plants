@@ -27,12 +27,12 @@ import com.google.maps.model.LocationType;
 import com.google.maps.model.Size;
 
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Geolocation;
-import uk.co.gmescouts.stmarys.beddingplants.exports.data.model.GeolocatedPoint;
+import uk.co.gmescouts.stmarys.beddingplants.exports.model.GeolocatedPoint;
 import uk.co.gmescouts.stmarys.beddingplants.geolocation.configuration.GeolocationConfiguration;
-import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapImageFormat;
-import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapMarkerColour;
-import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapMarkerSize;
-import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapType;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.model.MapImageFormat;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.model.MapMarkerColour;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.model.MapMarkerSize;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.model.MapType;
 
 @Service
 public class GeolocationService {

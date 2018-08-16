@@ -60,7 +60,6 @@ public class Sale {
 			customer.setSale(this);
 
 			// replace existing Customer, if present
-			customers.remove(customer);
 			customers.add(customer);
 		}
 	}
@@ -71,7 +70,6 @@ public class Sale {
 			plant.setSale(this);
 
 			// replace existing Plant, if present
-			plants.remove(plant);
 			plants.add(plant);
 		}
 	}

@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Sale;
 import uk.co.gmescouts.stmarys.beddingplants.imports.service.ImportService;
-import uk.co.gmescouts.stmarys.beddingplants.sales.data.model.SaleSummary;
+import uk.co.gmescouts.stmarys.beddingplants.sales.model.SaleSummary;
 import uk.co.gmescouts.stmarys.beddingplants.sales.service.SalesService;
 
 @RestController

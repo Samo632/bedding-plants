@@ -1,4 +1,4 @@
-package uk.co.gmescouts.stmarys.beddingplants.imports.data.excel;
+package uk.co.gmescouts.stmarys.beddingplants.imports.model.excel;
 
 import org.apache.commons.lang3.StringUtils;
 

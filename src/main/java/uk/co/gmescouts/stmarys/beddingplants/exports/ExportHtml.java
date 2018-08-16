@@ -19,9 +19,9 @@ import uk.co.gmescouts.stmarys.beddingplants.data.model.Plant;
 import uk.co.gmescouts.stmarys.beddingplants.exports.configuration.ExportConfiguration;
 import uk.co.gmescouts.stmarys.beddingplants.exports.service.ExportService;
 import uk.co.gmescouts.stmarys.beddingplants.geolocation.configuration.GeolocationConfiguration;
-import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapMarkerColour;
-import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapMarkerSize;
-import uk.co.gmescouts.stmarys.beddingplants.geolocation.data.model.MapType;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.model.MapMarkerColour;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.model.MapMarkerSize;
+import uk.co.gmescouts.stmarys.beddingplants.geolocation.model.MapType;
 
 @Controller
 public class ExportHtml {
