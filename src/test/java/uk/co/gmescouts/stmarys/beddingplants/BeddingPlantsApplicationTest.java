@@ -9,6 +9,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import uk.co.gmescouts.stmarys.beddingplants.configuration.BeddingPlantsConfiguration;
 import uk.co.gmescouts.stmarys.beddingplants.configuration.WebMvcConfigure;
+import uk.co.gmescouts.stmarys.beddingplants.deliveries.configuration.DeliveriesConfiguration;
 import uk.co.gmescouts.stmarys.beddingplants.exports.configuration.ExportConfiguration;
 import uk.co.gmescouts.stmarys.beddingplants.geolocation.configuration.GeolocationConfiguration;
 import uk.co.gmescouts.stmarys.beddingplants.imports.configuration.ImportConfiguration;
@@ -18,7 +19,7 @@ import uk.co.gmescouts.stmarys.beddingplants.imports.configuration.ImportConfigu
 @SpringBootTest(properties = { "classpath:application.properties", "classpath:application-dev.properties" })
 @AutoConfigureWebClient
 @ContextConfiguration(classes = { WebMvcConfigure.class, BeddingPlantsConfiguration.class, ImportConfiguration.class, GeolocationConfiguration.class,
-		ExportConfiguration.class })
+		ExportConfiguration.class, DeliveriesConfiguration.class })
 public class BeddingPlantsApplicationTest {
 	@SuppressWarnings("EmptyMethod")
 	@Test
