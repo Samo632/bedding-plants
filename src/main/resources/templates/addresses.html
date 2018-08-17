@@ -1,20 +1,8 @@
 <!DOCTYPE html>
 <!--suppress HtmlUnknownAttribute -->
 <html xmlns:th="http://www.thymeleaf.org">
-	<head lang="en">
-		<!-- Required meta tags -->
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-	    <meta charset="utf-8">
-	    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-		<link href="http://cdn.jsdelivr.net/webjars/bootstrap/4.1.3/css/bootstrap.min.css"
-			th:href="@{/webjars/bootstrap/4.1.3/css/bootstrap.min.css}" rel="stylesheet" />
-
+	<head lang="en" th:replace="fragments/base :: common_header(~{::link})">
 		<link href="../static/css/addresses.css" th:href="@{/css/addresses.css}" rel="stylesheet" />
-
-		<link rel="icon" type="image/jpg" href="../static/images/logo.jpg" th:href="@{/images/logo.jpg}" />
-
-		<title th:text="${appName}">Bedding Plants</title>
 	</head>
 	<body>
 		<div id="map"></div>

@@ -73,5 +73,15 @@
     "name": "beddingplants.export.viewportMinLng",
     "type": "java.lang.Float",
     "description": "Default viewport minimum longitude"
+  },
+  {
+    "name": "beddingplants.deliveries.maxRoutePlantCount",
+    "type": "java.lang.Integer",
+    "description": "Maximum number of Plants within a Delivery Route (can exceed but should not be significantly greater)"
+  },
+  {
+    "name": "beddingplants.deliveries.maxRouteRadiusKm",
+    "type": "java.lang.Float",
+    "description": "Maximum area radius for Orders within a Delivery Route (can exceed but should not be significantly greater)"
   }
 ]}
