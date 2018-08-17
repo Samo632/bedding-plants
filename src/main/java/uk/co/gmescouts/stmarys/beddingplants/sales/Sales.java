@@ -59,7 +59,7 @@ class Sales {
 		final Set<SaleSummary> saleSummaries = salesService.findAllSales().stream().map(salesService::summariseSale)
 				.sorted(Comparator.comparingInt(SaleSummary::getYear)).collect(Collectors.toCollection(LinkedHashSet::new));
 
-		LOGGER.info("Number of Sales [{}]", saleSummaries);
+		LOGGER.debug("Number of Sales [{}]", saleSummaries);
 
 		return saleSummaries;
 	}
@@ -76,7 +76,7 @@ class Sales {
 	}
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE, value = SALE_DETAIL_ORDER)
-	public Order getOrderDetail(@RequestParam final Integer year, @RequestParam final Integer orderNumber) {
+	public Order getSaleOrderDetail(@RequestParam final Integer year, @RequestParam final Integer orderNumber) {
 		LOGGER.info("Finding details for Order [{}] from Sale year [{}]", orderNumber, year);
 
 		final Order order = salesService.findOrderByNumAndSaleYear(orderNumber, year);
@@ -87,7 +87,7 @@ class Sales {
 	}
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE, value = SALE_DETAIL_PLANT)
-	public Plant getPlantDetail(@RequestParam final Integer year, @RequestParam final Integer plantNumber) {
+	public Plant getSalePlantDetail(@RequestParam final Integer year, @RequestParam final Integer plantNumber) {
 		LOGGER.info("Finding details for Plant [{}] from Sale year [{}]", plantNumber, year);
 
 		final Plant plant = salesService.findPlantByNumAndSaleYear(plantNumber, year);
@@ -109,10 +109,10 @@ class Sales {
 	}
 
 	@DeleteMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE, value = DELETE_ORDER)
-	public Boolean deleteOrder(@RequestParam final Integer orderNumber, @RequestParam final Integer year) {
+	public Boolean deleteSaleOrder(@RequestParam final Integer orderNumber, @RequestParam final Integer year) {
 		LOGGER.info("Deleting Order [{}] from Sale [{}]", orderNumber, year);
 
-		final boolean deleted = salesService.deleteOrder(orderNumber, year);
+		final boolean deleted = salesService.deleteSaleOrder(orderNumber, year);
 
 		LOGGER.debug("Order [{}] from Sale [{}] deleted [{}]", orderNumber, year, deleted);
 
@@ -120,10 +120,10 @@ class Sales {
 	}
 
 	@DeleteMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE, value = DELETE_PLANT)
-	public Boolean deletePlant(@RequestParam final Integer plantNumber, @RequestParam final Integer year) {
+	public Boolean deleteSalePlant(@RequestParam final Integer plantNumber, @RequestParam final Integer year) {
 		LOGGER.info("Deleting Plant [{}] from Sale [{}]", plantNumber, year);
 
-		final boolean deleted = salesService.deletePlant(plantNumber, year);
+		final boolean deleted = salesService.deleteSalePlant(plantNumber, year);
 
 		LOGGER.debug("Plant [{}] from Sale [{}] deleted [{}]", plantNumber, year, deleted);
 

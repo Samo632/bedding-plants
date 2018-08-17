@@ -51,7 +51,7 @@
 				</thead>
 				<tbody>
 					<!--suppress HtmlUnknownTag, HtmlUnknownTag -->
-                    <th:block th:each="plant : ${plants}" th:with="amount=${@exportService.orderPlantAmount(order, plant)}">
+                    <th:block th:each="plant : ${plants}" th:with="amount=${@exportService.countOfPlantInOrder(order, plant)}">
 					<tr th:class="${amount != null ? 'ordered' : ''}">
 						<td th:text="${plant.num}">[Num]</td>
 						<td th:text="${plant.name}">[Name]</td>
@@ -60,7 +60,7 @@
 					</th:block>
 				</tbody>
 				<tfoot>
-					<tr><td colspan="2" class="total">Total</td><td th:text="${@exportService.orderPlantCount(order)}">£ [Total]</td></tr>
+					<tr><td colspan="2" class="total">Total</td><td th:text="${@exportService.countNumberOfPlantsInOrder(order)}">£ [Total]</td></tr>
 				</tfoot>
 			</table>
 		</div>

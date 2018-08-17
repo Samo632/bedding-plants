@@ -24,7 +24,6 @@ import org.springframework.web.client.RestTemplate;
 import com.google.maps.errors.ApiException;
 import com.itextpdf.html2pdf.ConverterProperties;
 import com.itextpdf.html2pdf.HtmlConverter;
-import com.itextpdf.kernel.PdfException;
 import com.itextpdf.kernel.pdf.CompressionConstants;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.kernel.pdf.WriterProperties;
@@ -103,11 +102,15 @@ public class ExportService {
 		return plantRepository.findBySaleYear(saleYear);
 	}
 
-	public Integer orderPlantCount(@NotNull final Order order) {
+	public Integer countNumberOfPlantsInOrder(@NotNull final Order order) {
+		LOGGER.info("Counting number of Plants in Order [{}]", order.getId());
+
 		return order.getOrderItems().stream().mapToInt(OrderItem::getCount).sum();
 	}
 
-	public Integer orderPlantAmount(@NotNull final Order order, @NotNull final Plant plant) {
+	public Integer countOfPlantInOrder(@NotNull final Order order, @NotNull final Plant plant) {
+		LOGGER.info("Counting number of Plant [{}] in Order [{}]", plant.getId(), order.getId());
+
 		final Optional<OrderItem> orderItem = order.getOrderItems().stream().filter(oi -> oi.getPlant().equals(plant)).findFirst();
 
 		Integer amount = null;
@@ -118,7 +121,7 @@ public class ExportService {
 	}
 
 	public byte[] exportSaleCustomersToPdf(@NotNull final Integer saleYear, final OrderType orderType) throws IOException {
-		LOGGER.info("Exporting Customer Orders for Sale [{}]", saleYear);
+		LOGGER.info("Exporting Customer Orders for Sale [{}] and Order Type [{}]", saleYear, orderType);
 
 		// setup the URLs
 		final String exportHostUrl = getExportHostUrl();
@@ -145,8 +148,6 @@ public class ExportService {
 			final PdfWriter pdfWriter = new PdfWriter(baos, writerProperties);
 			HtmlConverter.convertToPdf(html, pdfWriter, converterProperties);
 			pdf = baos.toByteArray();
-		} catch (final PdfException e) {
-			LOGGER.error("Unable to generate PDF from HTML: {}", e.getMessage(), e);
 		}
 
 		// return converted PDF (if any)
@@ -154,18 +155,26 @@ public class ExportService {
 	}
 
 	public Set<GeolocatedPoint> getGeolocatedSaleAddressesAsPoints(@NotNull final Integer saleYear, final OrderType orderType) {
+		LOGGER.info("Generating Geolocated Points from Addresses for Sale Year [{}] and Order Type [{}]", saleYear, orderType);
+
 		final Set<Address> geolocatedAddresses = getSaleAddresses(saleYear, orderType, true);
+		LOGGER.debug("[{}] Geolocated Addresses", CollectionUtils.size(geolocatedAddresses));
 
 		Set<GeolocatedPoint> geolocatedPoints = Collections.emptySet();
 		if (geolocatedAddresses != null) {
 			// convert Addresses to GeolocatedPoints ready for plotting on the map
 			geolocatedPoints = geolocatedAddresses.stream().map(ExportService::convertAddressToGeolocatedPoint).collect(Collectors.toSet());
+			LOGGER.debug("[{}] Geolocated Points from Addresses", CollectionUtils.size(geolocatedPoints));
 		}
+
 		return geolocatedPoints;
 	}
 
 	public byte[] exportGeolocatedSaleAddressesToImage(@NotNull final Integer saleYear, final OrderType orderType,
 			@NotNull final MapImageFormat mapImageFormat, @NotNull final MapType mapType) throws ApiException, InterruptedException, IOException {
+		LOGGER.info("Generating Map Image for Addresses from Sale Year [{}] and Order Type [{}] in Format [{}] with Map Type [{}]", saleYear,
+				orderType, mapImageFormat, mapType);
+
 		// get the (geolocated) Addresses as Points
 		final Set<GeolocatedPoint> geolocatedPoints = getGeolocatedSaleAddressesAsPoints(saleYear, orderType);
 
@@ -174,12 +183,15 @@ public class ExportService {
 		if (CollectionUtils.isNotEmpty(geolocatedPoints)) {
 			// get the image containing the Geolocated Points
 			mapImg = geolocationService.plotPointsOnMapImage(geolocatedPoints, mapImageFormat, mapType);
+			LOGGER.debug("Generated Image size [{}]", mapImg == null ? 0 : mapImg.length);
 		}
 
 		return mapImg;
 	}
 
 	public Set<Address> getSaleAddresses(@NotNull final Integer saleYear, final OrderType orderType, final boolean geolocatedOnly) {
+		LOGGER.info("Retrieving Addresses for Sale Year [{}] and Order Type [{}], Geolocated Only [{}]", saleYear, orderType, geolocatedOnly);
+
 		// get Addresses for specified Sale Year/OrderType
 		Set<Address> addresses;
 		if (orderType != null) {
@@ -187,11 +199,13 @@ public class ExportService {
 		} else {
 			addresses = addressRepository.findAddressByCustomersSaleYear(saleYear);
 		}
+		LOGGER.debug("[{}] Sale Addresses", CollectionUtils.size(addresses));
 
 		// filter to geolocated addresses only if so requested
 		if (geolocatedOnly) {
 			// geolocate Address(es), if not already
 			if (CollectionUtils.isNotEmpty(addresses)) {
+				LOGGER.debug("Geolocating Sale Addresses (if not previously geolocated)");
 				addresses.forEach(this::geolocateAddress);
 
 				// save these to the database
@@ -199,21 +213,28 @@ public class ExportService {
 			}
 
 			addresses = addresses.stream().filter(ExportService::isAddressGeolocated).collect(Collectors.toSet());
+			LOGGER.debug("[{}] Geolocated Sale Addresses", CollectionUtils.size(addresses));
 		}
 
 		return addresses;
 	}
 
 	private static boolean isAddressGeolocated(@NotNull final Address address) {
+		LOGGER.info("Checking if Address is Geolocated [{}]", address);
+
 		return address.getGeolocation() != null && StringUtils.isNotBlank(address.getGeolocation().getFormattedAddress());
 	}
 
 	private static GeolocatedPoint convertAddressToGeolocatedPoint(@NotNull final Address address) {
+		LOGGER.info("Converting Address [{}] to Geolocated Point", address);
+
 		final GeolocatedPoint geolocatedPoint = new GeolocatedPoint(address.getGeolocation().getLatitude(), address.getGeolocation().getLongitude(),
 				address.getGeolocatableAddress());
 
 		// determine size of the marker based on number of orders
+		// TODO: does this need restricting to specific Sale Year (as Customer may be a repeat across multiple Years)? Same for Order Types below?
 		final long numOrders = address.getCustomers().stream().mapToLong(customer -> customer.getOrders().size()).sum();
+		LOGGER.debug("Number of Orders associated with this Address [{}]", numOrders);
 		if (numOrders == 1) {
 			geolocatedPoint.setMapMarkerSize(MapMarkerSize.NORMAL);
 		} else {
@@ -223,11 +244,14 @@ public class ExportService {
 		// determine colour of marker based on order type
 		final boolean delivery = address.getCustomers().stream().flatMap(customer -> customer.getOrders().stream()).map(Order::getType)
 				.anyMatch(ExportService::isDelivery);
+		LOGGER.debug("Address contains a Delivery [{}]", delivery);
 		if (delivery) {
 			geolocatedPoint.setMapMarkerColour(MapMarkerColour.RED);
 		} else {
 			geolocatedPoint.setMapMarkerColour(MapMarkerColour.GREEN);
 		}
+
+		LOGGER.debug("Generated Geolocated Point [{}]", geolocatedPoint);
 
 		return geolocatedPoint;
 	}

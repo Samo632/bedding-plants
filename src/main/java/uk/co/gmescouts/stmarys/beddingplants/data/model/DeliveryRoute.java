@@ -8,8 +8,6 @@ import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -29,19 +27,19 @@ import lombok.NonNull;
 import lombok.ToString;
 
 @Entity
-@Table(name = "orders")
+@Table(name = "deliveryRoutes")
 @Data
 @Builder
-@EqualsAndHashCode(of = { "customer", "num" })
-@ToString(exclude = { "customer" })
+@EqualsAndHashCode(of = { "sale", "num" })
+@ToString(exclude = { "sale" })
 @NoArgsConstructor
 @AllArgsConstructor
-public class Order {
+public class DeliveryRoute {
 	@JsonIgnore
 	@Id
 	public Long getId() {
-		// key on the Sale year and Order num
-		return Long.valueOf(String.format("%04d%03d", customer.getSale().getYear(), this.num));
+		// key on the Sale year and DeliveryRoute num
+		return Long.valueOf(String.format("%04d%03d", sale.getYear(), this.num));
 	}
 
 	@SuppressWarnings("EmptyMethod")
@@ -57,44 +55,23 @@ public class Order {
 	@JsonIgnore
 	@Access(AccessType.FIELD)
 	@ManyToOne
-	private Customer customer;
-
-	@NonNull
-	@NotNull
-	@Enumerated(EnumType.STRING)
-	private DeliveryDay deliveryDay;
-
-	@NonNull
-	@NotNull
-	@Enumerated(EnumType.STRING)
-	private OrderType type;
-
-	private String courtesyOfName;
-
-	private String notes;
-
-	private Float paid;
-
-	@JsonIgnore
-	@Access(AccessType.FIELD)
-	@ManyToOne
-	private DeliveryRoute deliveryRoute;
+	private Sale sale;
 
 	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 	@NonNull
 	@Builder.Default
-	@OrderBy("plant")
+	@OrderBy("order")
 	@Access(AccessType.FIELD)
-	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "order")
-	private Set<OrderItem> orderItems = new TreeSet<>(Comparator.comparingInt(oi -> oi.getPlant().getNum()));
+	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "deliveryRoute")
+	private Set<Order> orders = new TreeSet<>(Comparator.comparingInt(Order::getNum));
 
-	public void addOrderItem(final OrderItem orderItem) {
-		if (orderItem != null) {
-			// link Order to OrderItem
-			orderItem.setOrder(this);
+	public void addOrder(final Order order) {
+		if (order != null) {
+			// link DeliveryRoute to Order
+			order.setDeliveryRoute(this);
 
-			// replace existing OrderItem, if present
-			orderItems.add(orderItem);
+			// replace existing Order, if present
+			orders.add(order);
 		}
 	}
 }

@@ -36,7 +36,7 @@ public class SalesService {
 	private PlantRepository plantRepository;
 
 	public Sale saveSale(final Sale sale) {
-		LOGGER.debug("Saving Sale [{}]", sale.getYear());
+		LOGGER.info("Saving Sale [{}]", sale.getYear());
 
 		return saleRepository.save(sale);
 	}
@@ -82,7 +82,7 @@ public class SalesService {
 		return plantRepository.findByNumAndSaleYear(plantNumber, saleYear);
 	}
 
-	public Boolean deleteOrder(@NotNull final Integer orderNumber, @NotNull final Integer year) {
+	public Boolean deleteSaleOrder(@NotNull final Integer orderNumber, @NotNull final Integer year) {
 		LOGGER.info("Deleting Order [{}] from Sale [{}]", orderNumber, year);
 
 		// first check if there is a matching Order
@@ -98,7 +98,7 @@ public class SalesService {
 		return deleted;
 	}
 
-	public Boolean deletePlant(@NotNull final Integer plantNumber, @NotNull final Integer year) {
+	public Boolean deleteSalePlant(@NotNull final Integer plantNumber, @NotNull final Integer year) {
 		LOGGER.info("Deleting Plant [{}] from Sale [{}]", plantNumber, year);
 
 		// first check if there is a matching Order

@@ -43,6 +43,13 @@ public class Sale {
 	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 	@NonNull
 	@Builder.Default
+	@OrderBy("num")
+	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "sale")
+	private Set<DeliveryRoute> deliveryRoutes = new TreeSet<>(Comparator.comparing(DeliveryRoute::getNum));
+
+	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+	@NonNull
+	@Builder.Default
 	@OrderBy("surname, forename")
 	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "sale")
 	private Set<Customer> customers = new TreeSet<>(Comparator.comparing(Customer::getName));
@@ -71,6 +78,16 @@ public class Sale {
 
 			// replace existing Plant, if present
 			plants.add(plant);
+		}
+	}
+
+	public void addDeliveryRoute(final DeliveryRoute deliveryRoute) {
+		if (deliveryRoute != null) {
+			// link Sale to DeliveryRoute
+			deliveryRoute.setSale(this);
+
+			// replace existing DeliveryRoute, if present
+			deliveryRoutes.add(deliveryRoute);
 		}
 	}
 }

@@ -1,8 +1,13 @@
 package uk.co.gmescouts.stmarys.beddingplants.geolocation.service;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -46,7 +51,7 @@ public class GeolocationService {
 
 	public byte[] plotPointsOnMapImage(@NotNull final Set<GeolocatedPoint> points, @NotNull final MapImageFormat mapImageFormat,
 			@NotNull final MapType mapType) throws ApiException, InterruptedException, IOException {
-		LOGGER.debug("Generating Google Map Image of Format [{}] and Type [{}] for [{}] Points", mapImageFormat, mapType, points.size());
+		LOGGER.info("Generating Google Map Image of Format [{}] and Type [{}] for [{}] Points", mapImageFormat, mapType, points.size());
 
 		byte[] imgData = null;
 
@@ -59,8 +64,7 @@ public class GeolocationService {
 			// set Marker Size to be whatever appears most frequently in the Geolocated Points
 			final Map<MapMarkerSize, Long> sizeCounts = points.stream().map(GeolocatedPoint::getMapMarkerSize)
 					.collect(Collectors.groupingBy(s -> s, Collectors.counting()));
-			final Optional<Entry<MapMarkerSize, Long>> mapMarkerSize = sizeCounts.entrySet().stream()
-					.max(Comparator.comparing(Entry::getValue));
+			final Optional<Entry<MapMarkerSize, Long>> mapMarkerSize = sizeCounts.entrySet().stream().max(Comparator.comparing(Entry::getValue));
 			mapMarkerSize.ifPresent(mapMarkerSizeLongEntry -> markers.size(mapMarkerSizeLongEntry.getKey().getGoogleStaticMapsMarkerSize()));
 
 			// set Marker Colour to be whatever appears most frequently in the Geolocated Points
@@ -92,7 +96,7 @@ public class GeolocationService {
 	}
 
 	public Geolocation geolocateGeolocatableAddress(@NotNull final String geolocatableAddress) {
-		LOGGER.debug("Gelocating Address [{}]", geolocatableAddress);
+		LOGGER.info("Gelocating Address [{}]", geolocatableAddress);
 
 		final Geolocation geolocation = new Geolocation();
 		try {
