@@ -1,6 +1,7 @@
 package uk.co.gmescouts.stmarys.beddingplants.data.model;
 
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -15,6 +16,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
@@ -36,7 +38,7 @@ import lombok.ToString;
 @ToString(exclude = { "customer" })
 @NoArgsConstructor
 @AllArgsConstructor
-public class Order {
+public class Order implements PlantSummary {
 	@JsonIgnore
 	@Id
 	public Long getId() {
@@ -47,6 +49,55 @@ public class Order {
 	@SuppressWarnings("EmptyMethod")
 	public void setId(final Long id) {
 		// intentionally blank, only needed for Hibernate
+	}
+
+	@Override
+	@JsonIgnore
+	@Transient
+	public Integer getCount() {
+		return this.orderItems.stream().mapToInt(OrderItem::getCount).sum();
+	}
+
+	/**
+	 * @param plant
+	 *            {@link Plant} to be counted
+	 * @return number of {@link Plant}s in {@link OrderItem} that matches the input plant
+	 */
+	@JsonIgnore
+	@Transient
+	public Integer getPlantCount(@NotNull final Plant plant) {
+		final Optional<OrderItem> orderItem = this.orderItems.stream().filter(oi -> oi.getPlant().equals(plant)).findFirst();
+
+		Integer amount = null;
+		if (orderItem.isPresent() && orderItem.get().getCount() > 0) {
+			amount = orderItem.get().getCount();
+		}
+		return amount;
+	}
+
+	/**
+	 * @return {@link #getPrice()} rounded to 2d.p. (for display)
+	 */
+	@JsonIgnore
+	@Transient
+	public Double getDisplayPrice() {
+		return Math.round(this.getPrice() * 100.0) / 100.0;
+	}
+
+	@Override
+	@JsonIgnore
+	@Transient
+	public Double getPrice() {
+		// sum of all OrderItem prices
+		return orderItems.stream().mapToDouble(OrderItem::getPrice).sum();
+	}
+
+	@Override
+	@JsonIgnore
+	@Transient
+	public Double getCost() {
+		// sum of all OrderItem costs
+		return orderItems.stream().mapToDouble(OrderItem::getCost).sum();
 	}
 
 	@NonNull

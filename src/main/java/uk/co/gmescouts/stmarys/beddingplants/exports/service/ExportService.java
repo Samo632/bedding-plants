@@ -5,7 +5,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -34,7 +33,6 @@ import uk.co.gmescouts.stmarys.beddingplants.data.PlantRepository;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Address;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Geolocation;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Order;
-import uk.co.gmescouts.stmarys.beddingplants.data.model.OrderItem;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.OrderType;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Plant;
 import uk.co.gmescouts.stmarys.beddingplants.exports.ExportHtml;
@@ -100,24 +98,6 @@ public class ExportService {
 		LOGGER.info("Get Plants for Sale [{}]", saleYear);
 
 		return plantRepository.findBySaleYear(saleYear);
-	}
-
-	public Integer countNumberOfPlantsInOrder(@NotNull final Order order) {
-		LOGGER.info("Counting number of Plants in Order [{}]", order.getId());
-
-		return order.getOrderItems().stream().mapToInt(OrderItem::getCount).sum();
-	}
-
-	public Integer countOfPlantInOrder(@NotNull final Order order, @NotNull final Plant plant) {
-		LOGGER.info("Counting number of Plant [{}] in Order [{}]", plant.getId(), order.getId());
-
-		final Optional<OrderItem> orderItem = order.getOrderItems().stream().filter(oi -> oi.getPlant().equals(plant)).findFirst();
-
-		Integer amount = null;
-		if (orderItem.isPresent()) {
-			amount = orderItem.get().getCount();
-		}
-		return amount;
 	}
 
 	public byte[] exportSaleCustomersToPdf(@NotNull final Integer saleYear, final OrderType orderType) throws IOException {
@@ -212,17 +192,11 @@ public class ExportService {
 				addresses = new HashSet<>(addressRepository.saveAll(addresses));
 			}
 
-			addresses = addresses.stream().filter(ExportService::isAddressGeolocated).collect(Collectors.toSet());
+			addresses = addresses.stream().filter(Address::isGeolocated).collect(Collectors.toSet());
 			LOGGER.debug("[{}] Geolocated Sale Addresses", CollectionUtils.size(addresses));
 		}
 
 		return addresses;
-	}
-
-	private static boolean isAddressGeolocated(@NotNull final Address address) {
-		LOGGER.info("Checking if Address is Geolocated [{}]", address);
-
-		return address.getGeolocation() != null && StringUtils.isNotBlank(address.getGeolocation().getFormattedAddress());
 	}
 
 	private static GeolocatedPoint convertAddressToGeolocatedPoint(@NotNull final Address address) {
@@ -243,7 +217,7 @@ public class ExportService {
 
 		// determine colour of marker based on order type
 		final boolean delivery = address.getCustomers().stream().flatMap(customer -> customer.getOrders().stream()).map(Order::getType)
-				.anyMatch(ExportService::isDelivery);
+				.anyMatch(OrderType::isDelivery);
 		LOGGER.debug("Address contains a Delivery [{}]", delivery);
 		if (delivery) {
 			geolocatedPoint.setMapMarkerColour(MapMarkerColour.RED);
@@ -254,10 +228,6 @@ public class ExportService {
 		LOGGER.debug("Generated Geolocated Point [{}]", geolocatedPoint);
 
 		return geolocatedPoint;
-	}
-
-	private static boolean isDelivery(@NotNull final OrderType orderType) {
-		return OrderType.DELIVER.equals(orderType);
 	}
 
 	private void geolocateAddress(@NotNull final Address address) {

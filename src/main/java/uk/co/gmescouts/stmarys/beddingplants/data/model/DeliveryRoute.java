@@ -13,6 +13,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
@@ -34,7 +35,7 @@ import lombok.ToString;
 @ToString(exclude = { "sale" })
 @NoArgsConstructor
 @AllArgsConstructor
-public class DeliveryRoute {
+public class DeliveryRoute implements PlantSummary {
 	@JsonIgnore
 	@Id
 	public Long getId() {
@@ -47,6 +48,29 @@ public class DeliveryRoute {
 		// intentionally blank, only needed for Hibernate
 	}
 
+	@Override
+	@JsonIgnore
+	@Transient
+	public Integer getCount() {
+		return this.orders.stream().mapToInt(Order::getCount).sum();
+	}
+
+	@Override
+	@JsonIgnore
+	@Transient
+	public Double getPrice() {
+		// sum of all OrderItem prices
+		return this.orders.stream().mapToDouble(Order::getPrice).sum();
+	}
+
+	@Override
+	@JsonIgnore
+	@Transient
+	public Double getCost() {
+		// sum of all OrderItem costs
+		return this.orders.stream().mapToDouble(Order::getCost).sum();
+	}
+
 	@NonNull
 	@NotNull
 	@Min(1)
@@ -56,6 +80,9 @@ public class DeliveryRoute {
 	@Access(AccessType.FIELD)
 	@ManyToOne
 	private Sale sale;
+
+	// TODO: store image of the DeliveryRoute points plotted on a map?
+	// private byte[] mapImage;
 
 	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 	@NonNull

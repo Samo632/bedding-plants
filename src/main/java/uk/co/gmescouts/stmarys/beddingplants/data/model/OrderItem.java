@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
@@ -27,7 +28,7 @@ import lombok.ToString;
 @ToString(exclude = { "order" })
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderItem {
+public class OrderItem implements PlantSummary {
 	@JsonIgnore
 	@Id
 	public Long getId() {
@@ -36,8 +37,26 @@ public class OrderItem {
 	}
 
 	@SuppressWarnings("EmptyMethod")
-    public void setId(final Long id) {
+	public void setId(final Long id) {
 		// intentionally blank, only needed for Hibernate
+	}
+
+	@Override
+	@JsonIgnore
+	@Transient
+	public Double getPrice() {
+		// plant price inc. VAT * number of plants ordered
+		return this.plant.getPrice() * this.count;
+	}
+
+	@Override
+	@JsonIgnore
+	@Transient
+	public Double getCost() {
+		// (plant cost exc. VAT + VAT) * number of plants ordered
+		final double vatMultiplier = 1.0 + (this.plant.getSale().getVat() / 100.0);
+
+		return (this.plant.getCost() * vatMultiplier) * this.count;
 	}
 
 	@JsonIgnore

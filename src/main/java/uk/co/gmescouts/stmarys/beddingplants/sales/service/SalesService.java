@@ -16,7 +16,6 @@ import uk.co.gmescouts.stmarys.beddingplants.data.PlantRepository;
 import uk.co.gmescouts.stmarys.beddingplants.data.SaleRepository;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Customer;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Order;
-import uk.co.gmescouts.stmarys.beddingplants.data.model.OrderItem;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Plant;
 import uk.co.gmescouts.stmarys.beddingplants.data.model.Sale;
 import uk.co.gmescouts.stmarys.beddingplants.sales.model.CustomerSummary;
@@ -142,31 +141,11 @@ public class SalesService {
 		return CustomerSummary.builder().orderCount(orderCount).ordersCostTotal(ordersCostTotal).ordersIncomeTotal(ordersIncomeTotal).build();
 	}
 
-	public Double orderPrice(@NotNull final Order order) {
-		return Math.round(calculateOrderIncomeTotal(order) * 100.0) / 100.0;
-	}
-
 	private static Double calculateOrdersCostTotal(@NotNull final Set<Order> orders) {
-		return orders.stream().flatMapToDouble(order -> order.getOrderItems().stream().mapToDouble(SalesService::calculateOrderItemCost)).sum();
-	}
-
-	private static Double calculateOrderItemCost(@NotNull final OrderItem orderItem) {
-		// (plant cost exc. VAT + VAT) * number of plants ordered
-		final double vatMultiplier = 1d + (orderItem.getPlant().getSale().getVat() / 100d);
-
-		return (orderItem.getPlant().getCost() * vatMultiplier) * orderItem.getCount();
+		return orders.stream().mapToDouble(Order::getCost).sum();
 	}
 
 	private static Double calculateOrdersIncomeTotal(@NotNull final Set<Order> orders) {
-		return orders.stream().mapToDouble(SalesService::calculateOrderIncomeTotal).sum();
-	}
-
-	private static Double calculateOrderIncomeTotal(@NotNull final Order order) {
-		return order.getOrderItems().stream().mapToDouble(SalesService::calculateOrderItemIncome).sum();
-	}
-
-	private static Double calculateOrderItemIncome(@NotNull final OrderItem orderItem) {
-		// plant price inc. VAT * number of plants ordered
-		return orderItem.getPlant().getPrice() * orderItem.getCount();
+		return orders.stream().mapToDouble(Order::getPrice).sum();
 	}
 }

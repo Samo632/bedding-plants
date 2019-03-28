@@ -38,7 +38,7 @@ public class Address {
 	@JsonIgnore
 	@Id
 	public String getId() {
-		return this.getGeolocatableAddress().toUpperCase();
+		return StringUtils.upperCase(this.getGeolocatableAddress());
 	}
 
 	@SuppressWarnings("EmptyMethod")
@@ -89,10 +89,22 @@ public class Address {
 		return geo.toString();
 	}
 
+	/**
+	 * @return true if Address contains a non-blank Postcode <b>or</b> Street <u>and</u> Town; otherwise false
+	 */
 	@JsonIgnore
 	@Transient
 	public boolean isGeolocatable() {
 		return (StringUtils.isNotBlank(street) && StringUtils.isNotBlank(town)) || StringUtils.isNotBlank(postcode);
+	}
+
+	/**
+	 * @return true if Address contains a Geolocation with a non-blank Formatted Address; otherwise false
+	 */
+	@JsonIgnore
+	@Transient
+	public boolean isGeolocated() {
+		return this.geolocation != null && StringUtils.isNotBlank(this.geolocation.getFormattedAddress());
 	}
 
 	private String houseNameNumber;
