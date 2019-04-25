@@ -41,6 +41,7 @@
 
 # Package Files #
 *.jar
+!maven-wrapper.jar
 *.war
 *.ear
 *.zip
