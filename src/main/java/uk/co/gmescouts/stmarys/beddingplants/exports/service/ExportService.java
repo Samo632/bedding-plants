@@ -113,7 +113,7 @@ public class ExportService {
 		final String html = restTemplate.getForObject(exportHtmlUrl, String.class, saleYear);
 
 		// convert HTML to PDF
-		byte[] pdf = null;
+		byte[] pdf;
 
 		// converter properties (image/css locations)
 		final ConverterProperties converterProperties = new ConverterProperties();

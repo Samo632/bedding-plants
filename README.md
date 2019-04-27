@@ -6,4 +6,4 @@ Build and launch via Maven:
 ```./mvnw clean verify spring-boot:run```
 
 # Swagger UI
-Access Swagger UI via http://localhost:8443/bedding-plants/
+Access Swagger UI via <http://localhost:8443/bedding-plants/>

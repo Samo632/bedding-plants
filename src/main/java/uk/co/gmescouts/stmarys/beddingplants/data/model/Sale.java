@@ -40,21 +40,18 @@ public class Sale {
 	@NotNull
 	private Double vat;
 
-	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 	@NonNull
 	@Builder.Default
 	@OrderBy("num")
 	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "sale")
 	private Set<DeliveryRoute> deliveryRoutes = new TreeSet<>(Comparator.comparing(DeliveryRoute::getNum));
 
-	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 	@NonNull
 	@Builder.Default
 	@OrderBy("surname, forename")
 	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "sale")
 	private Set<Customer> customers = new TreeSet<>(Comparator.comparing(Customer::getName));
 
-	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 	@NonNull
 	@Builder.Default
 	@OrderBy("num")

@@ -1,6 +1,7 @@
 package uk.co.gmescouts.stmarys.beddingplants.data.model;
 
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -117,14 +118,13 @@ public class Address {
 
 	private String postcode;
 
-	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 	@NonNull
 	@JsonIgnore
 	@Builder.Default
 	@OrderBy("surname, forename")
 	@Access(AccessType.FIELD)
 	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "address")
-	private Set<Customer> customers = new TreeSet<>(Comparator.comparing(Customer::getForename));
+	private Set<Customer> customers = new HashSet<>(); // FIXME: new TreeSet<>(Comparator.comparing(Customer::getForename));
 
 	private Geolocation geolocation;
 

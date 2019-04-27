@@ -131,7 +131,6 @@ public class Order implements PlantSummary {
 	@ManyToOne
 	private DeliveryRoute deliveryRoute;
 
-	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 	@NonNull
 	@Builder.Default
 	@OrderBy("plant")

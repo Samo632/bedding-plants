@@ -4,15 +4,15 @@ public interface PlantSummary {
 	/**
 	 * @return total number {@link Plant}s
 	 */
-	public Integer getCount();
+	Integer getCount();
 
 	/**
 	 * @return total price of {@link Plant}s
 	 */
-	public Double getPrice();
+	Double getPrice();
 
 	/**
 	 * @return total cost of {@link Plant}s
 	 */
-	public Double getCost();
+	Double getCost();
 }

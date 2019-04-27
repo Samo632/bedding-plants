@@ -74,7 +74,6 @@ public class Customer {
 	@ManyToOne
 	private Sale sale;
 
-	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 	@NonNull
 	@Builder.Default
 	@Access(AccessType.FIELD)

@@ -53,7 +53,7 @@ public class DeliveriesService {
 			// XXX: need to set Sale and Num for Delivery Routes
 			final Set<DeliveryRoute> singleOrderRoutes = deliveryOrders.stream().filter(this::maximumPlantLimitReached)
 					.map(this::createDeliveryRouteFromOrders).collect(Collectors.toSet());
-			singleOrderRoutes.stream().forEach(r -> r.setSale(sale));
+			singleOrderRoutes.forEach(r -> r.setSale(sale));
 
 			// 3) group orders by Postcode - combine into Route where matched
 
@@ -99,7 +99,7 @@ public class DeliveriesService {
 	 *            Start altitude in meters
 	 * @param el2
 	 *            End altitude in meters
-	 * @returns Distance in Meters
+	 * @return Distance in Meters
 	 */
 	private static double distance(final double lat1, final double lat2, final double lon1, final double lon2, final double el1, final double el2) {
 		// TODO: use this (approximation) for "line of sight" point distances *or* use Google Maps Distance Matrix?

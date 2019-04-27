@@ -84,7 +84,6 @@ public class DeliveryRoute implements PlantSummary {
 	// TODO: store image of the DeliveryRoute points plotted on a map?
 	// private byte[] mapImage;
 
-	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 	@NonNull
 	@Builder.Default
 	@OrderBy("order")
