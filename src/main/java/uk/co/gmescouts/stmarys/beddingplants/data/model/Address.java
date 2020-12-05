@@ -1,9 +1,7 @@
 package uk.co.gmescouts.stmarys.beddingplants.data.model;
 
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;

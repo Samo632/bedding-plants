@@ -1,11 +1,9 @@
 package uk.co.gmescouts.stmarys.beddingplants;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.client.AutoConfigureWebClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import uk.co.gmescouts.stmarys.beddingplants.configuration.BeddingPlantsConfiguration;
 import uk.co.gmescouts.stmarys.beddingplants.configuration.WebMvcConfigure;
@@ -14,16 +12,16 @@ import uk.co.gmescouts.stmarys.beddingplants.exports.configuration.ExportConfigu
 import uk.co.gmescouts.stmarys.beddingplants.geolocation.configuration.GeolocationConfiguration;
 import uk.co.gmescouts.stmarys.beddingplants.imports.configuration.ImportConfiguration;
 
-@SuppressWarnings("WeakerAccess")
-@RunWith(SpringRunner.class)
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @SpringBootTest(properties = { "classpath:application.properties", "classpath:application-dev.properties" })
 @AutoConfigureWebClient
 @ContextConfiguration(classes = { WebMvcConfigure.class, BeddingPlantsConfiguration.class, ImportConfiguration.class, GeolocationConfiguration.class,
 		ExportConfiguration.class, DeliveriesConfiguration.class })
-public class BeddingPlantsApplicationTest {
-	@SuppressWarnings("EmptyMethod")
+class BeddingPlantsApplicationTest {
 	@Test
-	public void contextLoads() {
-		// intentionally blank
+	void contextLoads() {
+		// simply assert the configuration has loaded and application context created
+		assertTrue(true);
 	}
 }
